@@ -78,3 +78,38 @@ export async function pullTransStatusUntilFinish(id: string, cb: (status: Status
     await timer
   }
 }
+
+export { blockhashData, hammingDistance } from './blockhash'
+import { blockhashData } from './blockhash'
+
+export function blobToImageData(blob: Blob): Promise<ImageData> {
+  const blobUrl = URL.createObjectURL(blob)
+
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = (err) => reject(err)
+    img.src = blobUrl
+  }).then((img) => {
+    URL.revokeObjectURL(blobUrl)
+
+    let w = img.width
+    let h = img.height
+    const factor = Math.max(w, h) / 256
+    w = w / factor
+    h = h / factor
+
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(img, 0, 0, w, h)
+
+    return ctx.getImageData(0, 0, w, h)
+  })
+}
+
+export async function blockhashBlob(blob: Blob, bits?: number, method?: 1 | 2): Promise<string> {
+  const imgData = await blobToImageData(blob)
+  return blockhashData(imgData, bits, method)
+}

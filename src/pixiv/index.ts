@@ -1,4 +1,4 @@
-import { getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../core'
+import { blockhashBlob, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
 
 export default () => {
   interface Instance {
@@ -85,6 +85,8 @@ export default () => {
         })
         originalImage = result.response as Blob
       }
+      const hash = await blockhashBlob(originalImage)
+      console.log(hash)
       button.innerText = '正在提交翻译'
       const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {
         button.innerText = '提交翻译出错'

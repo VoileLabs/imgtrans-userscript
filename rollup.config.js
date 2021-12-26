@@ -10,7 +10,6 @@ export default defineConfig({
     entryFileNames: 'imgtrans-userscript.user.js',
     format: 'cjs',
     banner: fs.readFileSync('src/banner.js', 'utf8'),
-    sourcemap: 'inline'
   },
   plugins: [emptyDir(), typescript()]
 })

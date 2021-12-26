@@ -7,7 +7,6 @@
     "types": ["tampermonkey"],
     "moduleResolution": "Node",
     "strict": true,
-    "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "noEmit": true,
