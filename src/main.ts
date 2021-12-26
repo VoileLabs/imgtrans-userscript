@@ -14,8 +14,10 @@ const installObserver = new MutationObserver(() => {
     /* mount new translator */
 
     // check if the page is a image page
-    // https://www.pixiv.net/artworks/<id>
-    if (new URL(location.href).pathname.match(/^\/artworks\/(\d+)/)) {
+    const url = new URL(location.href)
+
+    // https://www.pixiv.net/(en/)artworks/<id>
+    if (url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/artworks\//)) {
       stopTranslator = pixiv()
     }
   }
