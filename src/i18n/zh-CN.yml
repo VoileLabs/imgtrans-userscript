@@ -1,0 +1,29 @@
+common:
+  source:
+    download-image: 正在拉取原图
+    download-image-error: 拉取原图出错
+  client:
+    submit: 正在提交翻译
+    submit-error: 提交翻译出错
+    download-image: 正在下载图片
+    download-image-error: 下载图片出错
+  status:
+    default: 未知状态
+    pending: 正在等待
+    pending_pos: 正在等待，你的队列位置{pos}
+    detection: 正在检测文本
+    ocr: 正在识别文本
+    mask_generation: 正在生成文本掩码
+    inpainting: 正在修补图片
+    translating: 正在翻译文本
+    render: 正在渲染
+    error: 翻译出错
+    error-lang: 不支持的语言
+  control:
+    translate: 翻译
+    batch: 翻译全部
+    reset: 还原
+  batch:
+    progress: 翻译中({count}/{total})
+    finish: 翻译完成
+    error: 翻译完成(有失败)

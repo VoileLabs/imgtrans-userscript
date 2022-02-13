@@ -1,3 +1,4 @@
+import { changeLangEl } from './i18n'
 import pixiv from './pixiv'
 
 let currentURL: string | undefined
@@ -5,6 +6,9 @@ let stopTranslator: () => void | undefined
 const installObserver = new MutationObserver(() => {
   if (currentURL !== location.href) {
     currentURL = location.href
+
+    // update i18n element
+    changeLangEl(document.documentElement as HTMLHtmlElement)
 
     // there is a navigation in the page
 

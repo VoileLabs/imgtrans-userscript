@@ -5,13 +5,14 @@ import { emptyDir } from 'rollup-plugin-empty-dir'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
+import yaml from '@rollup/plugin-yaml'
 
 export default defineConfig({
   input: 'src/main.ts',
   output: {
     dir: 'dist',
     entryFileNames: 'imgtrans-userscript.user.js',
-    format: 'cjs',
+    format: 'iife',
     banner:
       fs.readFileSync('src/banner.js', 'utf8') +
       '\n' +
@@ -19,6 +20,10 @@ export default defineConfig({
         .map((file) => '/**\n' + fs.readFileSync(file, 'utf8') + '\n*/')
         .join('\n\n') +
       '\n',
+    globals: {
+      vue: 'Vue',
+    },
   },
-  plugins: [emptyDir(), nodeResolve(), commonjs(), typescript()],
+  external: ['vue'],
+  plugins: [emptyDir(), nodeResolve(), commonjs(), typescript(), yaml()],
 })

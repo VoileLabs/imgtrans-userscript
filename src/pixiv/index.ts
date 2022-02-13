@@ -1,6 +1,8 @@
+import { createApp, defineComponent, h, ref, withModifiers } from 'vue'
 import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
 import { blockhash } from '../utils/blockhash'
 import { phash } from '../utils/phash'
+import { t, tt } from '../i18n'
 
 export default () => {
   interface Instance {
@@ -67,12 +69,57 @@ export default () => {
     let translateMounted = false
     let buttonDisabled = false
 
+    const buttonText = ref(t('common.control.translate'))
+    const buttonHint = ref('')
+
+    // create a translate botton
+    parent.style.position = 'relative'
+    const container = document.createElement('div')
+    parent.appendChild(container)
+    const buttonApp = createApp(
+      defineComponent({
+        setup() {
+          return () =>
+            // container
+            h(
+              'div',
+              {
+                style: {
+                  position: 'absolute',
+                  zIndex: '1',
+                  bottom: '10px',
+                  right: '10px',
+                },
+              },
+              [
+                // button
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    style: {
+                      fontSize: '1rem',
+                    },
+                    onClick: withModifiers(() => {
+                      toggle()
+                    }, ['stop', 'prevent']),
+                  },
+                  [tt(buttonText.value), buttonHint.value]
+                ),
+              ]
+            )
+        },
+      })
+    )
+    buttonApp.mount(container)
+
     async function getTranslatedImage(): Promise<string> {
       if (translatedImage) return translatedImage
       buttonDisabled = true
-      const text = button.innerText
+      const text = buttonText.value
+      buttonHint.value = ''
 
-      button.innerText = '正在拉取原图'
+      buttonText.value = t('common.source.download-image')
       if (!originalImage) {
         // fetch original image
         const result = await GM.xmlHttpRequest({
@@ -82,35 +129,34 @@ export default () => {
           headers: { referer: 'https://www.pixiv.net/' },
           overrideMimeType: 'text/plain; charset=x-user-defined',
         }).catch((e) => {
-          button.innerText = '拉取原图出错'
+          buttonText.value = t('common.source.download-image-error')
           throw e
         })
         originalImage = result.response as Blob
       }
       const imageData = await blobToImageData(originalImage)
       console.log('blockhash', blockhash(imageData), 'phash', phash(imageData))
-      button.innerText = '正在提交翻译'
+      buttonText.value = t('common.client.submit')
       const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {
-        button.innerText = '提交翻译出错'
+        buttonText.value = t('common.client.submit-error')
         throw e
       })
 
-      button.innerText = '正在等待'
+      buttonText.value = t('common.status.pending')
       await pullTransStatusUntilFinish(id, (status) => {
-        const text = getStatusText(status)
-        button.innerText = text
+        buttonText.value = getStatusText(status)
       }).catch((e) => {
-        button.innerText = String(e)
+        buttonText.value = e
         throw e
       })
 
-      button.innerText = '正在下载图片'
+      buttonText.value = t('common.client.download-image')
       const image = await GM.xmlHttpRequest({
         method: 'GET',
         responseType: 'blob',
-        url: 'https://touhou.ai/imgtrans/result/' + id + '/final.jpg',
+        url: 'https://touhou.ai/imgtrans/result/' + id + '/final.png',
       }).catch((e) => {
-        button.innerText = '下载图片出错'
+        buttonText.value = t('common.client.download-image-error')
         throw e
       })
       const imageUri = URL.createObjectURL(image.response as Blob)
@@ -118,7 +164,7 @@ export default () => {
       translatedImage = imageUri
       translatedMap.set(originalSrc, translatedImage)
 
-      button.innerText = text
+      buttonText.value = text
       buttonDisabled = false
       return imageUri
     }
@@ -130,7 +176,7 @@ export default () => {
         imageNode.setAttribute('data-trans', src)
         imageNode.setAttribute('src', translated)
         imageNode.removeAttribute('srcset')
-        button.innerText = '还原'
+        buttonText.value = t('common.control.reset')
       } catch (e) {
         buttonDisabled = false
         translateMounted = false
@@ -142,7 +188,7 @@ export default () => {
       imageNode.setAttribute('src', src)
       if (srcset) imageNode.setAttribute('srcset', srcset)
       imageNode.removeAttribute('data-trans')
-      button.innerText = '翻译'
+      buttonText.value = t('common.control.translate')
     }
 
     // called on click
@@ -157,34 +203,13 @@ export default () => {
       }
     }
 
-    // create a translate botton
-    parent.style.position = 'relative'
-
-    const container = document.createElement('div')
-    container.style.position = 'absolute'
-    container.style.zIndex = '1'
-    container.style.bottom = '10px'
-    container.style.right = '10px'
-
-    const button = document.createElement('button')
-    button.setAttribute('type', 'button')
-    button.innerText = '翻译'
-    button.style.fontSize = '1rem'
-    button.addEventListener('click', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      toggle()
-    })
-    container.appendChild(button)
-
-    parent.appendChild(container)
-
     // enable if enabled
     if (translateEnabledMap.get(originalSrc)) enable()
 
     return {
       imageNode,
       stop: () => {
+        buttonApp.unmount()
         parent.removeChild(container)
         if (translateMounted) disable()
       },
@@ -208,53 +233,75 @@ export default () => {
     if (document.querySelector('.sc-emr523-2')) return
     const bookmark = document.querySelector('.gtm-main-bookmark')
     if (bookmark) {
-      const container = bookmark.parentElement!.parentElement!
-      if (container.querySelector('[data-transall]')) return
+      const parent = bookmark.parentElement!.parentElement!
+      if (parent.querySelector('[data-transall]')) return
 
-      const el = document.createElement('div')
-      el.innerText = '翻译全部'
-      el.setAttribute('data-transall', 'true')
-      el.style.display = 'inline-block'
-      el.style.marginRight = '13px'
-      el.style.padding = '0'
-      el.style.color = 'inherit'
-      el.style.height = '32px'
-      el.style.lineHeight = '32px'
-      el.style.cursor = 'pointer'
-      el.style.fontWeight = '700'
+      const container = document.createElement('div')
+      parent.appendChild(container)
 
-      const transall = (e: MouseEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        let finished = 0
-        const total = instances.size
-        el.innerText = `翻译中(0/${total})`
-        let erred = false
-        const inc = () => {
-          finished++
-          if (finished === total) {
-            if (erred) el.innerText = '翻译完成'
-            else el.innerText = '翻译完成(有失败)'
-            el.removeEventListener('click', transall)
-          } else {
-            el.innerText = `翻译中(${finished}/${total})`
-          }
-        }
-        const err = () => {
-          erred = true
-          inc()
-        }
-        for (const instance of instances.values()) {
-          if (instance.isEnabled()) inc()
-          else instance.enable().then(inc).catch(err)
-        }
-      }
-      el.addEventListener('click', transall)
+      const buttonApp = createApp(
+        defineComponent({
+          setup() {
+            const started = ref(false)
+            const total = ref(0)
+            const finished = ref(0)
+            const erred = ref(false)
 
-      container.appendChild(el)
+            return () =>
+              h(
+                'div',
+                {
+                  'data-transall': 'true',
+                  style: {
+                    display: 'inline-block',
+                    marginRight: '13px',
+                    padding: '0',
+                    color: 'inherit',
+                    height: '32px',
+                    lineHeight: '32px',
+                    cursor: 'pointer',
+                    fontWeight: '700',
+                  },
+                  onClick: withModifiers(() => {
+                    if (started.value) return
+                    started.value = true
+                    total.value = instances.size
+                    const inc = () => {
+                      finished.value++
+                    }
+                    const err = () => {
+                      erred.value = true
+                      finished.value++
+                    }
+                    for (const instance of instances.values()) {
+                      if (instance.isEnabled()) inc()
+                      else instance.enable().then(inc).catch(err)
+                    }
+                  }, ['stop', 'prevent']),
+                },
+                [
+                  tt(
+                    started.value
+                      ? finished.value === total.value
+                        ? erred.value
+                          ? t('common.batch.error')
+                          : t('common.batch.finish')
+                        : t('common.batch.progress', {
+                            count: finished.value,
+                            total: total.value,
+                          })
+                      : t('common.control.batch')
+                  ),
+                ]
+              )
+          },
+        })
+      )
+      buttonApp.mount(container)
 
       removeTransAll = () => {
-        container.removeChild(el)
+        buttonApp.unmount()
+        parent.removeChild(container)
       }
     }
   }

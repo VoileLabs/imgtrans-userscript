@@ -1,0 +1,14 @@
+languageIds:
+  - javascript
+  - typescript
+  - javascriptreact
+  - typescriptreact
+  - vue
+
+usageMatchRegex:
+  - "[^\\w\\d]t\\(['\"`]({key})['\"`]"
+
+refactorTemplates:
+  - t('$1')
+
+monopoly: true

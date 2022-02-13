@@ -1,0 +1,29 @@
+common:
+  source:
+    download-image: Downloading original image
+    download-image-error: Error during original image download
+  client:
+    submit: Submitting translation
+    submit-error: Error during translation submission
+    download-image: Downloading translated image
+    download-image-error: Error during translated image download
+  status:
+    default: Unknown status
+    pending: Pending
+    pending_pos: Pending, {pos} in queue
+    detection: Detecting text
+    ocr: Scanning text
+    mask_generation: Generating mask
+    inpainting: Inpainting
+    translating: Translating
+    render: Rendering
+    error: Error during translation
+    error-lang: Unsupported language
+  control:
+    translate: Translate
+    batch: Translate all
+    reset: Reset
+  batch:
+    progress: Translating ({count}/{total} finished)
+    finish: Translation finished
+    error: Translation finished with errors

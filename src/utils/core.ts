@@ -1,6 +1,9 @@
+import { BCP47ToISO639, realLang, t, TranslateState } from '../i18n'
+
 export async function submitTranslate(blob: Blob, suffix: string) {
   const formData = new FormData()
   formData.append('file', blob, 'image.' + suffix)
+  formData.append('tgt_lang', BCP47ToISO639(realLang.value))
 
   const result = await GM.xmlHttpRequest({
     method: 'POST',
@@ -31,32 +34,32 @@ export async function getTranslateStatus(id: string): Promise<Status> {
   }
 }
 
-export function getStatusText(status: Status): string {
+export function getStatusText(status: Status): TranslateState {
   switch (status.state) {
     case 'pending':
       if (status.waiting > 0) {
-        return `正在等待，你的队列位置${status.waiting}`
+        return t('common.status.pending_pos', { pos: status.waiting })
       } else {
-        return `正在处理`
+        return t('common.status.pending')
       }
     case 'detection':
-      return '正在检测文本'
+      return t('common.status.detection')
     case 'ocr':
-      return '正在识别文本'
+      return t('common.status.ocr')
     case 'mask_generation':
-      return '正在生成文本掩码'
+      return t('common.status.mask_generation')
     case 'inpainting':
-      return '正在修补图片'
+      return t('common.status.inpainting')
     case 'translating':
-      return '正在翻译'
+      return t('common.status.translating')
     case 'render':
-      return '正在渲染'
+      return t('common.status.render')
     case 'error':
-      return '翻译出错'
+      return t('common.status.error')
     case 'error-lang':
-      return '不支持的语言'
+      return t('common.status.error-lang')
     default:
-      return '未知状态'
+      return t('common.status.default')
   }
 }
 
@@ -68,9 +71,9 @@ export async function pullTransStatusUntilFinish(id: string, cb: (status: Status
     if (status.state === 'finished') {
       return
     } else if (status.state === 'error') {
-      throw new Error('翻译出错')
+      throw t('common.status.error')
     } else if (status.state === 'error-lang') {
-      throw new Error('不支持的语言')
+      throw t('common.status.error-lang')
     } else {
       cb(status)
     }
