@@ -172,7 +172,7 @@ function bmvbhash(data: ImageData, bits: number) {
   return bitsToHexhash(result)
 }
 
-export function blockhashData(imgData: ImageData, bits = 16, method: 1 | 2 = 2) {
+export function blockhash(imgData: ImageData, bits = 16, method: 1 | 2 = 2) {
   if (method === 1) {
     return bmvbhashEven(imgData, bits)
   } else if (method === 2) {

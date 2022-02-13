@@ -1,4 +1,6 @@
-import { blockhashBlob, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
+import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
+import { blockhash } from '../utils/blockhash'
+import { phash } from '../utils/phash'
 
 export default () => {
   interface Instance {
@@ -85,8 +87,8 @@ export default () => {
         })
         originalImage = result.response as Blob
       }
-      const hash = await blockhashBlob(originalImage)
-      console.log(hash)
+      const imageData = await blobToImageData(originalImage)
+      console.log('blockhash', blockhash(imageData), 'phash', phash(imageData))
       button.innerText = '正在提交翻译'
       const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {
         button.innerText = '提交翻译出错'

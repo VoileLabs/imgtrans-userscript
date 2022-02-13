@@ -79,9 +79,6 @@ export async function pullTransStatusUntilFinish(id: string, cb: (status: Status
   }
 }
 
-export { blockhashData, hammingDistance } from './blockhash'
-import { blockhashData } from './blockhash'
-
 export function blobToImageData(blob: Blob): Promise<ImageData> {
   const blobUrl = URL.createObjectURL(blob)
 
@@ -107,9 +104,4 @@ export function blobToImageData(blob: Blob): Promise<ImageData> {
 
     return ctx.getImageData(0, 0, w, h)
   })
-}
-
-export async function blockhashBlob(blob: Blob, bits?: number, method?: 1 | 2): Promise<string> {
-  const imgData = await blobToImageData(blob)
-  return blockhashData(imgData, bits, method)
 }

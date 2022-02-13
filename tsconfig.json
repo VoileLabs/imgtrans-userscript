@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "types": ["tampermonkey"],
+    "types": ["tampermonkey", "vitest/globals"],
     "moduleResolution": "Node",
     "strict": true,
     "resolveJsonModule": true,
