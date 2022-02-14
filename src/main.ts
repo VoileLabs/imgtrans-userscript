@@ -1,9 +1,15 @@
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
 import pixiv from './pixiv'
+import twitter from './twitter'
+
+export interface Translator {
+  canKeep?: (url: string) => boolean | null | undefined
+  stop?: () => void
+}
 
 let currentURL: string | undefined
-let stopTranslator: () => void | undefined
+let translator: Translator | undefined
 const installObserver = new MutationObserver(() => {
   if (currentURL !== location.href) {
     currentURL = location.href
@@ -16,17 +22,23 @@ const installObserver = new MutationObserver(() => {
     /* update i18n element */
     changeLangEl(document.documentElement as HTMLHtmlElement)
 
-    /* unmount previous translator */
-    if (stopTranslator) stopTranslator()
+    /* update translator */
+    // only if the translator needs to be updated
+    if (!translator?.canKeep?.(currentURL)) {
+      // unmount previous translator
+      translator?.stop?.()
+      translator = undefined
 
-    /* mount new translator */
-
-    // check if the page is a image page
-    const url = new URL(location.href)
-
-    // https://www.pixiv.net/(en/)artworks/<id>
-    if (url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/artworks\//)) {
-      stopTranslator = pixiv()
+      // check if the page is a image page
+      const url = new URL(location.href)
+      // https://www.pixiv.net/(en/)artworks/<id>
+      if (url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/artworks\//)) {
+        translator = pixiv()
+      }
+      // https://twitter.com/<user>/status/<id>
+      else if (url.hostname.endsWith('twitter.com') && url.pathname.match(/\/status\//)) {
+        translator = twitter()
+      }
     }
   }
 })

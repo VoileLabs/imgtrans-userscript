@@ -1,4 +1,5 @@
 import { computed, createApp, defineComponent, h, ref, withModifiers } from 'vue'
+import { Translator } from '../main'
 import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
 import { blockhash } from '../utils/blockhash'
 import { phash } from '../utils/phash'
@@ -6,7 +7,7 @@ import { t, TranslateState, tt } from '../i18n'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
 
-export default () => {
+export default (): Translator => {
   interface Instance {
     imageNode: HTMLImageElement
     stop: () => void
@@ -377,9 +378,10 @@ export default () => {
   })
   imageObserver.observe(document.body, { childList: true, subtree: true })
 
-  // unmount
-  return () => {
-    instances.forEach((instance) => instance.stop())
-    removeTransAll?.()
+  return {
+    stop() {
+      instances.forEach((instance) => instance.stop())
+      removeTransAll?.()
+    },
   }
 }
