@@ -1,6 +1,6 @@
 {
   "name": "imgtrans-userscript",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "scripts": {
     "build": "rollup -c",
@@ -9,6 +9,7 @@
     "testw": "vitest --watch"
   },
   "devDependencies": {
+    "@iconify-json/carbon": "^1.0.15",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.3",
     "@rollup/plugin-typescript": "^8.3.0",
@@ -19,6 +20,7 @@
     "@types/tampermonkey": "^4.0.5",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
+    "@vue/compiler-sfc": "^3.2.31",
     "canvas": "^2.9.0",
     "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",
@@ -29,6 +31,7 @@
     "rollup": "^2.67.2",
     "rollup-plugin-empty-dir": "^1.0.5",
     "typescript": "^4.5.5",
+    "unplugin-icons": "^0.13.1",
     "vitest": "^0.3.4"
   },
   "dependencies": {

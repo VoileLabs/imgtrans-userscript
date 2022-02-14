@@ -5,6 +5,7 @@ import { emptyDir } from 'rollup-plugin-empty-dir'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
+import icons from 'unplugin-icons/rollup'
 import yaml from '@rollup/plugin-yaml'
 
 export default defineConfig({
@@ -25,5 +26,14 @@ export default defineConfig({
     },
   },
   external: ['vue'],
-  plugins: [emptyDir(), nodeResolve(), commonjs(), typescript(), yaml()],
+  plugins: [
+    emptyDir(),
+    nodeResolve(),
+    commonjs(),
+    typescript(),
+    icons({
+      compiler: 'vue3',
+    }),
+    yaml(),
+  ],
 })

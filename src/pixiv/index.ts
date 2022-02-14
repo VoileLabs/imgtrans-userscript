@@ -1,8 +1,10 @@
-import { createApp, defineComponent, h, ref, withModifiers } from 'vue'
+import { computed, createApp, defineComponent, h, ref, withModifiers } from 'vue'
 import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
 import { blockhash } from '../utils/blockhash'
 import { phash } from '../utils/phash'
-import { t, tt } from '../i18n'
+import { t, TranslateState, tt } from '../i18n'
+import IconCarbonTranslate from '~icons/carbon/translate'
+import IconCarbonReset from '~icons/carbon/reset'
 
 export default () => {
   interface Instance {
@@ -69,7 +71,9 @@ export default () => {
     let translateMounted = false
     let buttonDisabled = false
 
-    const buttonText = ref(t('common.control.translate'))
+    const buttonProcessing = ref(false)
+    const buttonTranslated = ref(false)
+    const buttonText = ref<TranslateState | undefined>()
     const buttonHint = ref('')
 
     // create a translate botton
@@ -79,6 +83,7 @@ export default () => {
     const buttonApp = createApp(
       defineComponent({
         setup() {
+          const content = computed(() => (buttonText.value ? tt(buttonText.value) : '') + buttonHint.value)
           return () =>
             // container
             h(
@@ -87,24 +92,82 @@ export default () => {
                 style: {
                   position: 'absolute',
                   zIndex: '1',
-                  bottom: '10px',
-                  right: '10px',
+                  bottom: '8px',
+                  right: content.value ? '4px' : '26px',
                 },
               },
               [
-                // button
                 h(
-                  'button',
+                  'div',
                   {
-                    type: 'button',
                     style: {
-                      fontSize: '1rem',
+                      position: 'relative',
                     },
-                    onClick: withModifiers(() => {
-                      toggle()
-                    }, ['stop', 'prevent']),
                   },
-                  [tt(buttonText.value), buttonHint.value]
+                  [
+                    h(
+                      'div',
+                      {
+                        style: {
+                          fontSize: '16px',
+                          lineHeight: '16px',
+                          height: '16px',
+                          padding: '3px',
+                          paddingLeft: content.value ? '28px' : '2px',
+                          border: '2px solid #D1D5DB',
+                          borderRadius: '6px',
+                          background: '#fff',
+                        },
+                      },
+                      [content.value]
+                    ),
+                    h(
+                      'div',
+                      {
+                        style: {
+                          position: 'absolute',
+                          left: '-5px',
+                          top: '-2px',
+                          background: '#fff',
+                          borderRadius: '24px',
+                        },
+                      },
+                      [
+                        // button
+                        h(buttonTranslated.value ? IconCarbonReset : IconCarbonTranslate, {
+                          style: {
+                            fontSize: '18px',
+                            lineHeight: '18px',
+                            width: '18px',
+                            height: '18px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                          },
+                          onClick: withModifiers(() => {
+                            toggle()
+                          }, ['stop', 'prevent']),
+                        }),
+                        h('div', {
+                          style: {
+                            position: 'absolute',
+                            top: '0',
+                            left: '0',
+                            right: '0',
+                            bottom: '0',
+                            border: '2px solid #D1D5DB',
+                            ...(buttonProcessing.value
+                              ? {
+                                  borderTop: '2px solid #7DD3FC',
+                                  animation: 'imgtrans-spin 1s linear infinite',
+                                }
+                              : {}),
+                            borderRadius: '24px',
+                            pointerEvents: 'none',
+                          },
+                        }),
+                      ]
+                    ),
+                  ]
                 ),
               ]
             )
@@ -118,6 +181,7 @@ export default () => {
       buttonDisabled = true
       const text = buttonText.value
       buttonHint.value = ''
+      buttonProcessing.value = true
 
       buttonText.value = t('common.source.download-image')
       if (!originalImage) {
@@ -165,6 +229,7 @@ export default () => {
       translatedMap.set(originalSrc, translatedImage)
 
       buttonText.value = text
+      buttonProcessing.value = false
       buttonDisabled = false
       return imageUri
     }
@@ -176,7 +241,7 @@ export default () => {
         imageNode.setAttribute('data-trans', src)
         imageNode.setAttribute('src', translated)
         imageNode.removeAttribute('srcset')
-        buttonText.value = t('common.control.reset')
+        buttonTranslated.value = true
       } catch (e) {
         buttonDisabled = false
         translateMounted = false
@@ -188,7 +253,7 @@ export default () => {
       imageNode.setAttribute('src', src)
       if (srcset) imageNode.setAttribute('srcset', srcset)
       imageNode.removeAttribute('data-trans')
-      buttonText.value = t('common.control.translate')
+      buttonTranslated.value = false
     }
 
     // called on click

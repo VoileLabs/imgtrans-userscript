@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "types": ["tampermonkey", "vitest/globals"],
+    "types": ["tampermonkey", "vitest/globals", "unplugin-icons/types/vue"],
     "moduleResolution": "Node",
     "strict": true,
     "resolveJsonModule": true,

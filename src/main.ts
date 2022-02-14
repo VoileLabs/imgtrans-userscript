@@ -1,3 +1,4 @@
+import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
 import pixiv from './pixiv'
 
@@ -7,10 +8,13 @@ const installObserver = new MutationObserver(() => {
   if (currentURL !== location.href) {
     currentURL = location.href
 
-    // update i18n element
-    changeLangEl(document.documentElement as HTMLHtmlElement)
-
     // there is a navigation in the page
+
+    /* ensure css is loaded */
+    checkCSS()
+
+    /* update i18n element */
+    changeLangEl(document.documentElement as HTMLHtmlElement)
 
     /* unmount previous translator */
     if (stopTranslator) stopTranslator()
