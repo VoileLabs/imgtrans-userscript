@@ -47,7 +47,7 @@ function median(arr: number[]): number {
  * Implementation follows http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
  * Converted to TypeScript from https://github.com/JohannesBuchner/imagehash/blob/0abd4878bdb3c2b7bd0a5ec58d1ffca530e70cec/imagehash.py#L197
  */
-export function phash(image: ImageData, hashSize = 8, highfreqFactor = 4) {
+export function phash(image: ImageData, hashSize = 16, highfreqFactor = 4) {
   const imageSize = hashSize * highfreqFactor
   // convert image to grayscale
   const data = image.data

@@ -27,3 +27,21 @@ common:
     progress: Translating ({count}/{total} finished)
     finish: Translation finished
     error: Translation finished with errors
+settings:
+  detection-resolution: Text detection resolution
+  render-text-direction: Render text direction
+  render-text-direction-options:
+    auto: Follow original direction
+    horizontal: Horizontal only
+  reset: Reset Settings
+  target-language: Translate target language
+  target-language-options:
+    auto: Follow website language
+  text-detector: Text detector
+  text-detector-options:
+    auto: Default
+  title: Touhou.AI | Manga Translator Settings
+  translator: Translator
+  script-language: Userscript language
+  script-language-options:
+    auto: Follow website language

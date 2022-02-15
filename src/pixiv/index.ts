@@ -33,7 +33,7 @@ export default (): Translator => {
       removedImages.delete(node)
       if (!images.has(node)) {
         // new image
-        console.log('new', node)
+        // console.log('new', node)
         try {
           instances.set(node, mountToNode(node))
           images.add(node)
@@ -44,7 +44,7 @@ export default (): Translator => {
     }
     for (const node of removedImages) {
       // removed image
-      console.log('remove', node)
+      // console.log('remove', node)
       if (instances.has(node)) {
         const instance = instances.get(node)!
         instance.stop()

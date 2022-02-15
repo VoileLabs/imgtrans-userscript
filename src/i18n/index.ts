@@ -1,4 +1,5 @@
 import { computed, ref, watch } from 'vue'
+import { scriptLang } from '../composables'
 
 import zhCN from './zh-CN.yml'
 import enUS from './en-US.yml'
@@ -20,7 +21,7 @@ export interface TranslateState {
 }
 
 export const realLang = ref(navigator.language)
-export const lang = computed(() => tryMatchLang(realLang.value))
+export const lang = computed(() => scriptLang.value || tryMatchLang(realLang.value))
 watch(lang, (o, n) => {
   if (o === n) return
   console.log('lang changed: ' + lang.value, 'real: ' + realLang.value)

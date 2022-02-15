@@ -10,5 +10,6 @@ usageMatchRegex:
 
 refactorTemplates:
   - t('$1')
+  - tt(t('$1'))
 
 monopoly: true

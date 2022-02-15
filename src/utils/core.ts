@@ -1,9 +1,14 @@
+import { detectionResolution, renderTextDirection, targetLang, textDetector, translator } from '../composables'
 import { BCP47ToISO639, realLang, t, TranslateState } from '../i18n'
 
 export async function submitTranslate(blob: Blob, suffix: string) {
   const formData = new FormData()
   formData.append('file', blob, 'image.' + suffix)
-  formData.append('tgt_lang', BCP47ToISO639(realLang.value))
+  formData.append('size', detectionResolution.value)
+  formData.append('translator', translator.value)
+  formData.append('tgt_lang', targetLang.value || BCP47ToISO639(realLang.value))
+  formData.append('dir', renderTextDirection.value)
+  formData.append('detector', textDetector.value)
 
   const result = await GM.xmlHttpRequest({
     method: 'POST',
