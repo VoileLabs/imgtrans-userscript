@@ -10,7 +10,7 @@ common:
   status:
     default: 未知状态
     pending: 正在等待
-    pending_pos: 正在等待，你的队列位置{pos}
+    pending_pos: 正在等待，列队还有 {pos} 张图片
     detection: 正在检测文本
     ocr: 正在识别文本
     mask_generation: 正在生成文本掩码
