@@ -98,17 +98,14 @@ export function blobToImageData(blob: Blob): Promise<ImageData> {
   }).then((img) => {
     URL.revokeObjectURL(blobUrl)
 
-    let w = img.width
-    let h = img.height
-    const factor = Math.max(w, h) / 256
-    w = w / factor
-    h = h / factor
+    const w = img.width
+    const h = img.height
 
     const canvas = document.createElement('canvas')
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')!
-    ctx.drawImage(img, 0, 0, w, h)
+    ctx.drawImage(img, 0, 0)
 
     return ctx.getImageData(0, 0, w, h)
   })

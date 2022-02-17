@@ -1,5 +1,7 @@
 // Copyright 2014 Commons Machinery http://commonsmachinery.se/. Distributed under an MIT license, please see LICENSE.
 
+import { lanczos } from '@rgba-image/lanczos'
+
 const one_bits = [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4]
 
 export function hammingDistance(hash1: string, hash2: string) {
@@ -173,10 +175,13 @@ function bmvbhash(data: ImageData, bits: number) {
 }
 
 export function blockhash(imgData: ImageData, bits = 16, method: 1 | 2 = 2) {
+  const resizedData = new ImageData(256, 256)
+  lanczos(imgData, resizedData)
+
   if (method === 1) {
-    return bmvbhashEven(imgData, bits)
+    return bmvbhashEven(resizedData, bits)
   } else if (method === 2) {
-    return bmvbhash(imgData, bits)
+    return bmvbhash(resizedData, bits)
   } else {
     throw new Error('Bad hashing method')
   }
