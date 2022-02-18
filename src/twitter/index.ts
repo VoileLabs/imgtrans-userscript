@@ -16,10 +16,9 @@ import {
 import { Translator } from '../main'
 import { t, tt } from '../i18n'
 import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
-import { blockhash } from '../utils/blockhash'
-import { phash } from '../utils/phash'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
+import { phash } from '../utils'
 
 export default (): Translator => {
   const statusId = location.pathname.match(/\/status\/(\d+)/)?.[1]
@@ -107,7 +106,7 @@ export default (): Translator => {
       const originalImage = originalImageMap[url]
 
       const imageData = await blobToImageData(originalImage)
-      console.log('blockhash', blockhash(imageData), 'phash', phash(imageData))
+      console.log('phash', phash(imageData))
       translateStatusMap[url] = computed(() => tt(t('common.client.submit')))
       const originalSrcSuffix = url.split('.').pop()!
       const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {

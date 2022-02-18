@@ -1,11 +1,10 @@
 import { computed, createApp, defineComponent, h, ref, withModifiers } from 'vue'
 import { Translator } from '../main'
 import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
-import { blockhash } from '../utils/blockhash'
-import { phash } from '../utils/phash'
 import { t, TranslateState, tt } from '../i18n'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
+import { phash } from '../utils'
 
 export default (): Translator => {
   interface Instance {
@@ -200,7 +199,7 @@ export default (): Translator => {
         originalImage = result.response as Blob
       }
       const imageData = await blobToImageData(originalImage)
-      console.log('blockhash', blockhash(imageData), 'phash', phash(imageData))
+      console.log('phash', phash(imageData))
       buttonText.value = t('common.client.submit')
       const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {
         buttonText.value = t('common.client.submit-error')

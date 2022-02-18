@@ -7,6 +7,11 @@ More details about the service at original repository: <https://github.com/zyddn
 ## Usage
 
 ```bash
+# build wasm module
+$ cd wasm
+$ wasm-pack build -t web
+$ cd ..
+
 # install dependencies
 $ pnpm i
 

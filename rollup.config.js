@@ -7,6 +7,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import icons from 'unplugin-icons/rollup'
 import yaml from '@rollup/plugin-yaml'
+import { version } from './package.json'
 
 export default defineConfig({
   input: 'src/main.ts',
@@ -15,9 +16,9 @@ export default defineConfig({
     entryFileNames: 'imgtrans-userscript.user.js',
     format: 'iife',
     banner:
-      fs.readFileSync('src/banner.js', 'utf8') +
+      fs.readFileSync('src/banner.js', 'utf8').replace('{{version}}', version) +
       '\n' +
-      fgs(['LICENSE', 'src/**/LICENSE*', 'node_modules/@rgba-image/lanczos/**/LICENSE'], { onlyFiles: true })
+      fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
         .map((file) => '/**\n' + fs.readFileSync(file, 'utf8') + '\n*/')
         .join('\n\n') +
       '\n',
@@ -35,5 +36,15 @@ export default defineConfig({
       compiler: 'vue3',
     }),
     yaml(),
+    {
+      name: 'wasm-loader',
+      load(id) {
+        if (!/\.wasm$/.test(id)) {
+          return null
+        }
+        return `// The wasm source code can be found at https://github.com/VoileLabs/imgtrans-userscript/tree/v${version}/wasm
+export default '${Buffer.from(fs.readFileSync(id), 'binary').toString('base64')}'`
+      },
+    },
   ],
 })

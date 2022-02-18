@@ -1,3 +1,4 @@
+import wasmModule from '../wasm/pkg/wasm_bg.wasm'
 import { effectScope, EffectScope, onScopeDispose } from 'vue'
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
@@ -5,6 +6,7 @@ import pixiv from './pixiv'
 import pixivSettings from './pixiv/settings'
 import twitter from './twitter'
 import twitterSettings from './twitter/settings'
+import init from '../wasm/pkg/wasm'
 
 export interface Translator {
   canKeep?: (url: string) => boolean | null | undefined
@@ -32,10 +34,19 @@ function createScopedInstance<T extends Translator | SettingsInjector>(cb: () =>
   return { scope, i }
 }
 
+function decodeWasm(encoded: string) {
+  var binaryString = window.atob(encoded)
+  var bytes = new Uint8Array(binaryString.length)
+  for (var i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return bytes.buffer
+}
+
 let currentURL: string | undefined
 let translator: ScopedInstance<Translator> | undefined
 let settingsInjector: ScopedInstance<SettingsInjector> | undefined
-const installObserver = new MutationObserver(() => {
+const onUpdate = () => {
   if (currentURL !== location.href) {
     currentURL = location.href
 
@@ -84,5 +95,9 @@ const installObserver = new MutationObserver(() => {
       }
     }
   }
+}
+init(decodeWasm(wasmModule as unknown as string)).then(() => {
+  const installObserver = new MutationObserver(onUpdate)
+  installObserver.observe(document.body, { childList: true, subtree: true })
+  onUpdate()
 })
-installObserver.observe(document.body, { childList: true, subtree: true })
