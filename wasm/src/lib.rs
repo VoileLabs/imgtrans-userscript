@@ -21,6 +21,7 @@ fn phash_inner(rgba: Vec<u8>, width: u32, height: u32, hash_size: u32) -> String
     let hasher = HasherConfig::new()
         .hash_size(hash_size, hash_size)
         .resize_filter(FilterType::Lanczos3)
+        .preproc_dct()
         .to_hasher();
 
     let hash = hasher.hash_image(&image);
