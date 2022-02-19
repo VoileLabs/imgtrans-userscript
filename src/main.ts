@@ -1,4 +1,5 @@
 import wasmModule from '../wasm/pkg/wasm_bg.wasm'
+import { inflate } from 'pako'
 import { effectScope, EffectScope, onScopeDispose } from 'vue'
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
@@ -40,7 +41,7 @@ function decodeWasm(encoded: string) {
   for (var i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i)
   }
-  return bytes.buffer
+  return inflate(bytes).buffer
 }
 
 let currentURL: string | undefined

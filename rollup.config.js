@@ -1,4 +1,5 @@
 import fs from 'fs'
+import zlib from 'zlib'
 import { sync as fgs } from 'fast-glob'
 import { defineConfig } from 'rollup'
 import { emptyDir } from 'rollup-plugin-empty-dir'
@@ -24,9 +25,10 @@ export default defineConfig({
       '\n',
     globals: {
       vue: 'Vue',
+      pako: 'pako',
     },
   },
-  external: ['vue'],
+  external: ['vue', 'pako'],
   plugins: [
     emptyDir(),
     nodeResolve(),
@@ -43,7 +45,7 @@ export default defineConfig({
           return null
         }
         return `// The wasm source code can be found at https://github.com/VoileLabs/imgtrans-userscript/tree/v${version}/wasm
-export default '${Buffer.from(fs.readFileSync(id), 'binary').toString('base64')}'`
+export default '${Buffer.from(zlib.gzipSync(fs.readFileSync(id)), 'binary').toString('base64')}'`
       },
     },
   ],

@@ -9,6 +9,7 @@
 // @license      MIT
 // @supportURL   https://github.com/VoileLabs/imgtrans-userscript/issues
 // @require      https://unpkg.com/vue@3.2.31/dist/vue.runtime.global.prod.js
+// @require      https://unpkg.com/pako@2.0.4/dist/pako_inflate.min.js
 // @include      http*://www.pixiv.net/*
 // @match        http://www.pixiv.net/
 // @include      http*://twitter.com/*
