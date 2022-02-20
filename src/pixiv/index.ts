@@ -215,7 +215,16 @@ export default (): Translator => {
         throw e
       })
 
-      const imageUri = 'https://touhou.ai/imgtrans/result/' + id + '/final.png'
+      buttonText.value = t('common.client.download-image')
+      const image = await GM.xmlHttpRequest({
+        method: 'GET',
+        responseType: 'blob',
+        url: 'https://touhou.ai/imgtrans/result/' + id + '/final.png',
+      }).catch((e) => {
+        buttonText.value = t('common.client.download-image-error')
+        throw e
+      })
+      const imageUri = URL.createObjectURL(image.response as Blob)
 
       translatedImage = imageUri
       translatedMap.set(originalSrc, translatedImage)
@@ -233,21 +242,6 @@ export default (): Translator => {
         imageNode.setAttribute('data-trans', src)
         imageNode.setAttribute('src', translated)
         imageNode.removeAttribute('srcset')
-
-        buttonProcessing.value = true
-        buttonText.value = t('common.client.download-image')
-        const onload = () => {
-          imageNode.removeEventListener('load', onload)
-          buttonText.value = undefined
-          buttonProcessing.value = false
-        }
-        imageNode.addEventListener('load', onload)
-        const onerror = () => {
-          imageNode.removeEventListener('error', onerror)
-          buttonText.value = t('common.client.download-image-error')
-          buttonProcessing.value = false
-        }
-        imageNode.addEventListener('error', onerror)
 
         buttonTranslated.value = true
       } catch (e) {
