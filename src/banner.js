@@ -2,7 +2,7 @@
 // @name         Touhou.AI | Manga Translator
 // @name:zh-CN   Touhou.AI | 图片翻译器
 // @namespace    https://github.com/VoileLabs/imgtrans-userscript
-// @version      0.5.1
+// @version      0.5.2
 // @description  (WIP) Userscript for https://touhou.ai/imgtrans/, translate images on Pixiv, Twitter.
 // @description:zh-CN (WIP) https://touhou.ai/imgtrans/ 的用户脚本版本，一键翻译 Pixiv、Twitter 的图片
 // @author       QiroNT
@@ -32,3 +32,14 @@
 // @grant        GM_removeValueChangeListener
 // @run-at       document-end
 // ==/UserScript==
+
+// polyfill functions
+if (GM === undefined) {
+  GM = {};
+}
+GM.xmlHttpRequest = GM.xmlHttpRequest || GM_xmlhttpRequest;
+GM.setValue = GM.setValue || GM_setValue;
+GM.getValue = GM.getValue || GM_getValue;
+GM.deleteValue = GM.deleteValue || GM_deleteValue;
+GM.addValueChangeListener = GM.addValueChangeListener || GM_addValueChangeListener;
+GM.removeValueChangeListener = GM.removeValueChangeListener || GM_removeValueChangeListener;

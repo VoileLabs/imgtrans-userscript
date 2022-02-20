@@ -22,11 +22,13 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
   read()
 
   let listener: number | undefined
-  GM.addValueChangeListener(key, (name, oldValue, newValue, remote) => {
-    if (name === key) read(newValue)
-  }).then((l) => {
-    listener = l
-  })
+  if (GM.addValueChangeListener) {
+    ;(async () => {
+      listener = await GM.addValueChangeListener(key, (name, oldValue, newValue, remote) => {
+        if (name === key) read(newValue)
+      })
+    })()
+  }
 
   const stopWatch = watch(data, async () => {
     if (data.value == null) {
@@ -38,7 +40,7 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
 
   onScopeDispose(() => {
     stopWatch()
-    if (listener) GM.removeValueChangeListener(listener)
+    if (GM.removeValueChangeListener && listener) GM.removeValueChangeListener(listener)
   })
 
   return data as RemovableRef<T>
