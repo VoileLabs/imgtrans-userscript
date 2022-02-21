@@ -383,6 +383,7 @@ export default (): Translator => {
 
   return {
     stop() {
+      imageObserver.disconnect()
       instances.forEach((instance) => instance.stop())
       removeTransAll?.()
     },
