@@ -301,13 +301,12 @@ export default (): Translator => {
   let removeTransAll: () => void | undefined
   function refreshTransAll() {
     if (document.querySelector('.sc-emr523-2')) return
-    const bookmark = document.querySelector('.gtm-main-bookmark')
-    if (bookmark) {
-      const parent = bookmark.parentElement!.parentElement!
-      if (parent.querySelector('[data-transall]')) return
-
+    const section = document.querySelector('.sc-181ts2x-0')
+    if (section) {
+      if (section.querySelector('[data-transall]')) return
+      
       const container = document.createElement('div')
-      parent.appendChild(container)
+      section.appendChild(container)
 
       const buttonApp = createApp(
         defineComponent({
@@ -371,7 +370,7 @@ export default (): Translator => {
 
       removeTransAll = () => {
         buttonApp.unmount()
-        parent.removeChild(container)
+        section.removeChild(container)
       }
     }
   }
