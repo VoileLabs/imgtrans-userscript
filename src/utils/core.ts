@@ -10,7 +10,7 @@ export async function submitTranslate(blob: Blob, suffix: string) {
   formData.append('dir', renderTextDirection.value)
   formData.append('detector', textDetector.value)
 
-  const result = await GM.xmlHttpRequest({
+  const result = await GMP.xmlHttpRequest({
     method: 'POST',
     url: 'https://touhou.ai/imgtrans/submit',
     // @ts-expect-error FormData is supported
@@ -28,7 +28,7 @@ interface Status {
 }
 
 export async function getTranslateStatus(id: string): Promise<Status> {
-  const result = await GM.xmlHttpRequest({
+  const result = await GMP.xmlHttpRequest({
     method: 'GET',
     url: 'https://touhou.ai/imgtrans/task-state?taskid=' + id,
   })

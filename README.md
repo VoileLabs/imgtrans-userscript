@@ -10,6 +10,7 @@ More details about the service at original repository: <https://github.com/zyddn
 # build wasm module
 $ cd wasm
 $ wasm-pack build -t web
+$ wasm2js pkg/wasm_bg.wasm -o pkg/wasm_bg.js
 $ cd ..
 
 # install dependencies
@@ -17,5 +18,9 @@ $ pnpm i
 
 # build userscript
 $ pnpm build
-# userscript is now in dist/imgtrans-userscript.user.js
+# imgtrans-userscript.user.js is now in dist
+
+# build wasm_bg.js
+$ pnpm build-wasm
+# wasm_bg.js is now in dist
 ```

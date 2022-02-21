@@ -1,10 +1,11 @@
 {
   "name": "imgtrans-userscript",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "build": "rollup -c",
     "buildw": "rollup -cw",
+    "build-wasm": "rollup -c rollup-wasm.config.js",
     "test": "vitest --run",
     "testw": "vitest --watch"
   },
@@ -22,17 +23,19 @@
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
     "@vue/compiler-sfc": "^3.2.31",
+    "esbuild": "^0.14.23",
     "eslint": "^8.9.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^8.4.0",
     "eslint-plugin-prettier": "^4.0.0",
     "fast-glob": "^3.2.11",
     "happy-dom": "^2.39.1",
     "prettier": "2.5.1",
-    "rollup": "^2.67.2",
+    "rollup": "^2.67.3",
     "rollup-plugin-empty-dir": "^1.0.5",
+    "rollup-plugin-esbuild": "^4.8.2",
     "typescript": "^4.5.5",
-    "unplugin-icons": "^0.13.1",
-    "vitest": "^0.4.0"
+    "unplugin-icons": "^0.13.2",
+    "vitest": "^0.4.2"
   },
   "dependencies": {
     "vue": "^3.2.31"

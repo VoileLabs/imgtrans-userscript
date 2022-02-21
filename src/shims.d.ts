@@ -8,3 +8,5 @@ declare module '*.yml' {
   const data: any
   export default data
 }
+
+declare const GMP: typeof GM

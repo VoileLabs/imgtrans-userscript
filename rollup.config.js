@@ -1,5 +1,5 @@
 import fs from 'fs'
-import zlib from 'zlib'
+import path from 'path'
 import { sync as fgs } from 'fast-glob'
 import { defineConfig } from 'rollup'
 import { emptyDir } from 'rollup-plugin-empty-dir'
@@ -8,7 +8,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import icons from 'unplugin-icons/rollup'
 import yaml from '@rollup/plugin-yaml'
-import { version } from './package.json'
+import { version, dependencies } from './package.json'
 
 export default defineConfig({
   input: 'src/main.ts',
@@ -16,19 +16,23 @@ export default defineConfig({
     dir: 'dist',
     entryFileNames: 'imgtrans-userscript.user.js',
     format: 'iife',
-    banner:
-      fs.readFileSync('src/banner.js', 'utf8').replace('{{version}}', version) +
-      '\n' +
-      fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
-        .map((file) => '/**\n' + fs.readFileSync(file, 'utf8') + '\n*/')
-        .join('\n\n') +
-      '\n',
+    banner: fs
+      .readFileSync('src/banner.js', 'utf8')
+      .replace(/{{version}}/g, version)
+      .replace(/{{versionVue}}/g, dependencies.vue.replace(/^\^/, ''))
+      .replace(/{{wasmCommit}}/g, '52909c7d912cb34f1c905ae18c9e086363216c9c')
+      .replace(
+        '// {{license}}',
+        fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
+          .map((file) => '/**\n' + fs.readFileSync(file, 'utf8') + '\n*/')
+          .join('\n\n')
+      ),
     globals: {
       vue: 'Vue',
-      pako: 'pako',
+      wasmJsModule: 'wasmJsModule',
     },
   },
-  external: ['vue', 'pako'],
+  external: ['vue', 'wasmJsModule'],
   plugins: [
     emptyDir(),
     nodeResolve(),
@@ -39,13 +43,13 @@ export default defineConfig({
     }),
     yaml(),
     {
-      name: 'wasm-loader',
-      load(id) {
-        if (!/\.wasm$/.test(id)) {
-          return null
+      name: 'patch',
+      transform(code, id) {
+        if (id === path.resolve(__dirname, './wasm/pkg/wasm.js')) {
+          return {
+            code: code + '\nexport function setWasm(w){wasm=w;}\n',
+          }
         }
-        return `// The wasm source code can be found at https://github.com/VoileLabs/imgtrans-userscript/tree/v${version}/wasm
-export default '${Buffer.from(zlib.gzipSync(fs.readFileSync(id)), 'binary').toString('base64')}'`
       },
     },
   ],

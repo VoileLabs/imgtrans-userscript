@@ -11,7 +11,7 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
   const data = ref<T | undefined>(initialValue)
 
   async function read(newValue?: string) {
-    const rawValue = newValue ?? (await GM.getValue(key))
+    const rawValue = newValue ?? (await GMP.getValue(key))
     if (rawValue == null) {
       data.value = initialValue as UnwrapRef<T>
     } else {
@@ -22,29 +22,30 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
   read()
 
   let listener: number | undefined
-  GM.addValueChangeListener(key, (name, oldValue, newValue, remote) => {
-    if (name === key) read(newValue)
-  }).then((l) => {
-    listener = l
-  })
+  if (GMP.addValueChangeListener)
+    (async () => {
+      listener = await GMP.addValueChangeListener(key, (name, oldValue, newValue, remote) => {
+        if (name === key) read(newValue)
+      })
+    })()
 
   const stopWatch = watch(data, async () => {
     if (data.value == null) {
-      await GM.deleteValue(key)
+      await GMP.deleteValue(key)
     } else {
-      await GM.setValue(key, data.value)
+      await GMP.setValue(key, data.value)
     }
   })
 
   onScopeDispose(() => {
     stopWatch()
-    if (listener) GM.removeValueChangeListener(listener)
+    if (GMP.removeValueChangeListener && listener) GMP.removeValueChangeListener(listener)
   })
 
   return data as RemovableRef<T>
 }
 
-export const detectionResolution = useGMStorage('detectionResolution', 'M')
+export const detectionResolution = useGMStorage('detectionResolution', 'L')
 export const textDetector = useGMStorage('textDetector', 'auto')
 export const translator = useGMStorage('translator', 'baidu')
 export const renderTextDirection = useGMStorage('renderTextDirection', 'auto')

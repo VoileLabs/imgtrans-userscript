@@ -1,5 +1,3 @@
-import wasmModule from '../wasm/pkg/wasm_bg.wasm'
-import { inflate } from 'pako'
 import { effectScope, EffectScope, onScopeDispose } from 'vue'
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
@@ -8,6 +6,10 @@ import pixivSettings from './pixiv/settings'
 import twitter from './twitter'
 import twitterSettings from './twitter/settings'
 import init from '../wasm/pkg/wasm'
+// @ts-ignore
+import { setWasm } from '../wasm/pkg/wasm'
+// @ts-ignore
+import wasmJsModule from 'wasmJsModule'
 
 export interface Translator {
   canKeep?: (url: string) => boolean | null | undefined
@@ -35,14 +37,40 @@ function createScopedInstance<T extends Translator | SettingsInjector>(cb: () =>
   return { scope, i }
 }
 
-function decodeWasm(encoded: string) {
-  var binaryString = window.atob(encoded)
-  var bytes = new Uint8Array(binaryString.length)
-  for (var i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i)
+async function initWasm() {
+  const uri = await GMP.getResourceUrl('wasm')
+  try {
+    if (/^data:.+;base64,/.test(uri)) {
+      const data = window.atob(uri.split(';base64,', 2)[1])
+      const buffer = new Uint8Array(data.length)
+      for (let i = 0; i < data.length; i++) {
+        buffer[i] = data.charCodeAt(i)
+      }
+      await init(buffer)
+    } else {
+      await init(uri)
+    }
+  } catch (e) {
+    setWasm(wasmJsModule)
   }
-  return inflate(bytes).buffer
 }
+
+Promise.allSettled =
+  Promise.allSettled ||
+  ((promises: Promise<never>[]) =>
+    Promise.all(
+      promises.map((p) =>
+        p
+          .then((value) => ({
+            status: 'fulfilled',
+            value,
+          }))
+          .catch((reason) => ({
+            status: 'rejected',
+            reason,
+          }))
+      )
+    ))
 
 let currentURL: string | undefined
 let translator: ScopedInstance<Translator> | undefined
@@ -97,7 +125,10 @@ const onUpdate = () => {
     }
   }
 }
-init(decodeWasm(wasmModule as unknown as string)).then(() => {
+Promise.allSettled([initWasm()]).then((results) => {
+  for (const result of results) {
+    if (result.status === 'rejected') console.warn(result.reason)
+  }
   const installObserver = new MutationObserver(onUpdate)
   installObserver.observe(document.body, { childList: true, subtree: true })
   onUpdate()

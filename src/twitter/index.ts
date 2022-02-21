@@ -69,18 +69,6 @@ export default (): Translator => {
           img.setAttribute('data-transurl', ori)
           img.src = translatedMap[ori]!
           if (div) div.style.backgroundImage = `url("${translatedMap[ori]!}")`
-
-          translateStatusMap[ori] = computed(() => tt(t('common.client.download-image')))
-          const onload = () => {
-            img.removeEventListener('load', onload)
-            translateStatusMap[ori] = computed(() => undefined)
-          }
-          img.addEventListener('load', onload)
-          const onerror = () => {
-            img.removeEventListener('error', onerror)
-            translateStatusMap[ori] = computed(() => tt(t('common.client.download-image-error')))
-          }
-          img.addEventListener('error', onerror)
         }
       }
     })
@@ -91,7 +79,7 @@ export default (): Translator => {
       translateStatusMap[url] = computed(() => tt(t('common.source.download-image')))
       if (!originalImageMap[url]) {
         // fetch original image
-        const result = await GM.xmlHttpRequest({
+        const result = await GMP.xmlHttpRequest({
           method: 'GET',
           responseType: 'blob',
           url,
@@ -105,8 +93,12 @@ export default (): Translator => {
       }
       const originalImage = originalImageMap[url]
 
-      const imageData = await blobToImageData(originalImage)
-      console.log('phash', phash(imageData))
+      try {
+        const imageData = await blobToImageData(originalImage)
+        console.log('phash', phash(imageData))
+      } catch (e) {
+        console.warn(e)
+      }
       translateStatusMap[url] = computed(() => tt(t('common.client.submit')))
       const originalSrcSuffix = url.split('.').pop()!
       const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {
@@ -122,7 +114,16 @@ export default (): Translator => {
         throw e
       })
 
-      const imageUri = 'https://touhou.ai/imgtrans/result/' + id + '/final.png'
+      translateStatusMap[url] = computed(() => tt(t('common.client.download-image')))
+      const image = await GMP.xmlHttpRequest({
+        method: 'GET',
+        responseType: 'blob',
+        url: 'https://touhou.ai/imgtrans/result/' + id + '/final.png',
+      }).catch((e) => {
+        translateStatusMap[url] = computed(() => tt(t('common.client.download-image-error')))
+        throw e
+      })
+      const imageUri = URL.createObjectURL(image.response as Blob)
 
       translatedMap[url] = imageUri
 
@@ -157,6 +158,16 @@ export default (): Translator => {
     const buttonProcessing = computed(() => currentImg.value && !!translateStatusMap[currentImg.value]?.value)
     const buttonTranslated = computed(() => currentImg.value && !!translateEnabledMap[currentImg.value])
     const buttonContent = computed(() => (currentImg.value ? translateStatusMap[currentImg.value]?.value : ''))
+
+    container.onclick = withModifiers(() => {
+      if (!currentImg.value) return
+      if (translateStatusMap[currentImg.value]?.value) return
+      if (translateEnabledMap[currentImg.value]) {
+        disable(currentImg.value)
+      } else {
+        enable(currentImg.value)
+      }
+    }, ['stop', 'prevent'])
 
     const spinnerContainer = container.firstChild!
     const processingSpinner = document.createElement('div')
@@ -193,15 +204,6 @@ export default (): Translator => {
                 height: '20px',
                 marginTop: '4px',
               },
-              onClick: withModifiers(() => {
-                if (!currentImg.value) return
-                if (translateStatusMap[currentImg.value]?.value) return
-                if (translateEnabledMap[currentImg.value]) {
-                  disable(currentImg.value)
-                } else {
-                  enable(currentImg.value)
-                }
-              }, ['stop', 'prevent']),
             })
         },
       })
