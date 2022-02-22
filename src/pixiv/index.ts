@@ -275,7 +275,12 @@ export default (): Translator => {
                                 advancedMenuOpen.value = true
                               }, ['stop', 'prevent']),
                             })
-                        : []
+                        : h('div', {
+                            style: {
+                              width: '1px',
+                              height: '16px',
+                            },
+                          })
                     ),
                     h(
                       'div',
