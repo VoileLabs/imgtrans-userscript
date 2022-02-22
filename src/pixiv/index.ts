@@ -1,10 +1,20 @@
 import { computed, createApp, defineComponent, h, ref, withModifiers } from 'vue'
 import { Translator } from '../main'
-import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
+import {
+  blobToImageData,
+  getStatusText,
+  pullTransStatusUntilFinish,
+  submitTranslate,
+  TranslateOptionsOverwrite,
+} from '../utils/core'
 import { t, TranslateState, tt } from '../i18n'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
+import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
+import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { phash } from '../utils'
+import { detectionResolution, renderTextDirection } from '../composables'
+import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
 
 export default (): Translator => {
   interface Instance {
@@ -68,7 +78,7 @@ export default (): Translator => {
 
     let originalImage: Blob | undefined
     let translatedImage = translatedMap.get(originalSrc)
-    let translateMounted = false
+    let translateMounted = ref(false)
     let buttonDisabled = false
 
     const buttonProcessing = ref(false)
@@ -84,6 +94,15 @@ export default (): Translator => {
       defineComponent({
         setup() {
           const content = computed(() => (buttonText.value ? tt(buttonText.value) : '') + buttonHint.value)
+
+          const advancedMenuOpen = ref(false)
+
+          const advDetectRes = ref(detectionResolution.value)
+          const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
+
+          const advRenderTextDir = ref(renderTextDirection.value)
+          const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
+
           return () =>
             // container
             h(
@@ -92,8 +111,8 @@ export default (): Translator => {
                 style: {
                   position: 'absolute',
                   zIndex: '1',
-                  bottom: '8px',
-                  right: content.value ? '4px' : '26px',
+                  bottom: '4px',
+                  left: '8px',
                 },
               },
               [
@@ -111,15 +130,152 @@ export default (): Translator => {
                         style: {
                           fontSize: '16px',
                           lineHeight: '16px',
-                          height: '16px',
-                          padding: '3px',
-                          paddingLeft: content.value ? '28px' : '2px',
+                          padding: '2px',
+                          paddingLeft: translateMounted.value ? '2px' : '24px',
                           border: '2px solid #D1D5DB',
                           borderRadius: '6px',
                           background: '#fff',
+                          cursor: 'default',
                         },
                       },
-                      [content.value]
+                      content.value
+                        ? content.value
+                        : !translateMounted.value
+                        ? advancedMenuOpen.value
+                          ? [
+                              h(
+                                'div',
+                                {
+                                  style: {
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    paddingBottom: '2px',
+                                  },
+                                  onClick: withModifiers(() => {
+                                    advancedMenuOpen.value = false
+                                  }, ['stop', 'prevent']),
+                                },
+                                [
+                                  h('div', {}, tt(t('settings.inline-options-title'))),
+                                  h(IconCarbonChevronLeft, {
+                                    style: {
+                                      verticalAlign: 'middle',
+                                      cursor: 'pointer',
+                                    },
+                                  }),
+                                ]
+                              ),
+                              h(
+                                'div',
+                                {
+                                  style: {
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '4px',
+                                  },
+                                },
+                                [
+                                  [
+                                    [
+                                      t('settings.detection-resolution'),
+                                      advDetectRes,
+                                      advDetectResIndex,
+                                      detectResOptions,
+                                      detectResOptionsMap,
+                                    ] as const,
+                                    [
+                                      t('settings.render-text-direction'),
+                                      advRenderTextDir,
+                                      advRenderTextDirIndex,
+                                      renderTextDirOptions,
+                                      Object.fromEntries(
+                                        Object.entries(renderTextDirOptionsMap).map(([k, v]) => [k, tt(v)])
+                                      ),
+                                    ] as const,
+                                  ].map(([title, opt, optIndex, opts, optMap]) =>
+                                    h('div', {}, [
+                                      h(
+                                        'div',
+                                        {
+                                          style: {
+                                            fontSize: '12px',
+                                          },
+                                        },
+                                        tt(title)
+                                      ),
+                                      h(
+                                        'div',
+                                        {
+                                          style: {
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            userSelect: 'none',
+                                          },
+                                        },
+                                        [
+                                          h(optIndex.value <= 0 ? 'div' : IconCarbonChevronLeft, {
+                                            style: {
+                                              width: '1.2em',
+                                              cursor: 'pointer',
+                                            },
+                                            onClick: withModifiers(() => {
+                                              if (optIndex.value <= 0) return
+                                              opt.value = opts[optIndex.value - 1]
+                                            }, ['stop', 'prevent']),
+                                          }),
+                                          h('div', {}, optMap[opt.value]),
+                                          h(optIndex.value >= opts.length - 1 ? 'div' : IconCarbonChevronRight, {
+                                            style: {
+                                              width: '1.2em',
+                                              cursor: 'pointer',
+                                            },
+                                            onClick: withModifiers(() => {
+                                              if (optIndex.value >= opts.length - 1) return
+                                              opt.value = opts[optIndex.value + 1]
+                                            }, ['stop', 'prevent']),
+                                          }),
+                                        ]
+                                      ),
+                                    ])
+                                  ),
+                                  h(
+                                    'div',
+                                    {
+                                      style: {
+                                        width: '100%',
+                                        paddingBottom: '1px',
+                                        border: '1px solid #A1A1AA',
+                                        borderRadius: '2px',
+                                        textAlign: 'center',
+                                      },
+                                      onClick: withModifiers(() => {
+                                        if (buttonDisabled) return
+                                        if (translateMounted.value) return
+                                        enable({
+                                          detectionResolution: advDetectRes.value,
+                                          renderTextDirection: advRenderTextDir.value,
+                                        })
+                                        advancedMenuOpen.value = false
+                                      }, ['stop', 'prevent']),
+                                    },
+                                    tt(t('common.control.translate'))
+                                  ),
+                                ]
+                              ),
+                            ]
+                          : h(IconCarbonChevronRight, {
+                              style: {
+                                cursor: 'pointer',
+                              },
+                              onClick: withModifiers(() => {
+                                advancedMenuOpen.value = true
+                              }, ['stop', 'prevent']),
+                            })
+                        : []
                     ),
                     h(
                       'div',
@@ -144,7 +300,12 @@ export default (): Translator => {
                             cursor: 'pointer',
                           },
                           onClick: withModifiers(() => {
+                            if (advancedMenuOpen.value) return
                             toggle()
+                          }, ['stop', 'prevent']),
+                          onContextmenu: withModifiers(() => {
+                            if (translateMounted.value) advancedMenuOpen.value = false
+                            else advancedMenuOpen.value = !advancedMenuOpen.value
                           }, ['stop', 'prevent']),
                         }),
                         h('div', {
@@ -176,8 +337,8 @@ export default (): Translator => {
     )
     buttonApp.mount(container)
 
-    async function getTranslatedImage(): Promise<string> {
-      if (translatedImage) return translatedImage
+    async function getTranslatedImage(optionsOverwrite?: TranslateOptionsOverwrite): Promise<string> {
+      if (!optionsOverwrite && translatedImage) return translatedImage
       buttonDisabled = true
       const text = buttonText.value
       buttonHint.value = ''
@@ -205,7 +366,7 @@ export default (): Translator => {
         console.warn(e)
       }
       buttonText.value = t('common.client.submit')
-      const id = await submitTranslate(originalImage, originalSrcSuffix).catch((e) => {
+      const id = await submitTranslate(originalImage, originalSrcSuffix, optionsOverwrite).catch((e) => {
         buttonText.value = t('common.client.submit-error')
         throw e
       })
@@ -238,33 +399,33 @@ export default (): Translator => {
       return imageUri
     }
 
-    async function enable() {
-      translateMounted = true
+    async function enable(optionsOverwrite?: TranslateOptionsOverwrite) {
       try {
-        const translated = await getTranslatedImage()
+        const translated = await getTranslatedImage(optionsOverwrite)
         imageNode.setAttribute('data-trans', src)
         imageNode.setAttribute('src', translated)
         imageNode.removeAttribute('srcset')
 
+        translateMounted.value = true
         buttonTranslated.value = true
       } catch (e) {
         buttonDisabled = false
-        translateMounted = false
+        translateMounted.value = false
         throw e
       }
     }
     function disable() {
-      translateMounted = false
       imageNode.setAttribute('src', src)
       if (srcset) imageNode.setAttribute('srcset', srcset)
       imageNode.removeAttribute('data-trans')
+      translateMounted.value = false
       buttonTranslated.value = false
     }
 
     // called on click
     function toggle() {
       if (buttonDisabled) return
-      if (!translateMounted) {
+      if (!translateMounted.value) {
         translateEnabledMap.set(originalSrc, true)
         enable()
       } else {
@@ -281,7 +442,7 @@ export default (): Translator => {
       stop: () => {
         buttonApp.unmount()
         parent.removeChild(container)
-        if (translateMounted) disable()
+        if (translateMounted.value) disable()
       },
       async enable() {
         translateEnabledMap.set(originalSrc, true)
@@ -292,7 +453,7 @@ export default (): Translator => {
         return disable()
       },
       isEnabled() {
-        return translateMounted
+        return translateMounted.value
       },
     }
   }
@@ -304,7 +465,7 @@ export default (): Translator => {
     const section = document.querySelector('.sc-181ts2x-0')
     if (section) {
       if (section.querySelector('[data-transall]')) return
-      
+
       const container = document.createElement('div')
       section.appendChild(container)
 

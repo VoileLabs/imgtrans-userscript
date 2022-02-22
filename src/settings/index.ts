@@ -7,7 +7,20 @@ import {
   textDetector,
   translator,
 } from '../composables'
-import { t, tt } from '../i18n'
+import { t, TranslateState, tt } from '../i18n'
+
+export const detectResOptionsMap: Record<string, string> = {
+  S: '1024px',
+  M: '1536px',
+  L: '2048px',
+  X: '2560px',
+}
+export const detectResOptions = Object.keys(detectResOptionsMap)
+export const renderTextDirOptionsMap: Record<string, TranslateState> = {
+  auto: t('settings.render-text-direction-options.auto'),
+  horizontal: t('settings.render-text-direction-options.horizontal'),
+}
+export const renderTextDirOptions = Object.keys(renderTextDirOptionsMap)
 
 export function renderSettings(options?: {
   itemOrientation?: 'vertical' | 'horizontal'
@@ -25,6 +38,20 @@ export function renderSettings(options?: {
       },
     },
     [
+      // Sponsor
+      h(
+        'a',
+        {
+          href: 'https://ko-fi.com/voilelabs',
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          style: {
+            color: '#2563EB',
+            textDecoration: 'none',
+          },
+        },
+        tt(t('sponsor.text'))
+      ),
       // Detection resolution
       h(
         'div',
@@ -57,12 +84,7 @@ export function renderSettings(options?: {
                 detectionResolution.value = (e.target as HTMLSelectElement).value
               },
             },
-            [
-              h('option', { value: 'S' }, '1024px'),
-              h('option', { value: 'M' }, '1536px'),
-              h('option', { value: 'L' }, '2048px'),
-              h('option', { value: 'X' }, '2560px'),
-            ]
+            Object.entries(detectResOptionsMap).map(([key, value]) => h('option', { value: key }, value))
           ),
         ]
       ),

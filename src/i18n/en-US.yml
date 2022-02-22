@@ -45,3 +45,6 @@ settings:
   script-language: Userscript language
   script-language-options:
     auto: Follow website language
+  inline-options-title: Current Settings
+sponsor:
+  text: If you find this script helpful, please consider sponsoring us on ko-fi!

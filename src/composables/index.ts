@@ -45,7 +45,7 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
   return data as RemovableRef<T>
 }
 
-export const detectionResolution = useGMStorage('detectionResolution', 'L')
+export const detectionResolution = useGMStorage('detectionResolution', 'M')
 export const textDetector = useGMStorage('textDetector', 'auto')
 export const translator = useGMStorage('translator', 'baidu')
 export const renderTextDirection = useGMStorage('renderTextDirection', 'auto')

@@ -29,6 +29,7 @@ common:
     error: 翻译完成(有失败)
 settings:
   title: Touhou.AI | 图片翻译器设置
+  inline-options-title: 设置当前翻译
   detection-resolution: 文本扫描清晰度
   text-detector: 文本扫描器
   text-detector-options:
@@ -45,3 +46,5 @@ settings:
   script-language-options:
     auto: 跟随网页语言
   reset: 重置所有设置
+sponsor:
+  text: 制作不易，请考虑在 ko-fi 赞助我们！
