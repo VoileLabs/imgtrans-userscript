@@ -28,7 +28,7 @@ import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
 import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { phash } from '../utils'
 import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
-import { detectionResolution, renderTextDirection } from '../composables'
+import { detectionResolution, renderTextOrientation } from '../composables'
 
 export default (): Translator => {
   const statusId = location.pathname.match(/\/status\/(\d+)/)?.[1]
@@ -243,13 +243,13 @@ export default (): Translator => {
           const advDetectRes = ref(detectionResolution.value)
           const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
 
-          const advRenderTextDir = ref(renderTextDirection.value)
+          const advRenderTextDir = ref(renderTextOrientation.value)
           const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
 
           watch(currentImg, (n, o) => {
             if (n !== o) {
               advDetectRes.value = detectionResolution.value
-              advRenderTextDir.value = renderTextDirection.value
+              advRenderTextDir.value = renderTextOrientation.value
             }
           })
 
@@ -327,7 +327,7 @@ export default (): Translator => {
                               detectResOptionsMap,
                             ] as const,
                             [
-                              t('settings.render-text-direction'),
+                              t('settings.render-text-orientation'),
                               advRenderTextDir,
                               advRenderTextDirIndex,
                               renderTextDirOptions,
@@ -396,7 +396,7 @@ export default (): Translator => {
                                 if (translateEnabledMap[currentImg.value!]) return
                                 enable(currentImg.value!, {
                                   detectionResolution: advDetectRes.value,
-                                  renderTextDirection: advRenderTextDir.value,
+                                  renderTextOrientation: advRenderTextDir.value,
                                 })
                                 advancedMenuOpen.value = false
                               }, ['stop', 'prevent']),

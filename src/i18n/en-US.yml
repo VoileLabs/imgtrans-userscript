@@ -29,9 +29,9 @@ common:
     error: Translation finished with errors
 settings:
   detection-resolution: Text detection resolution
-  render-text-direction: Render text direction
-  render-text-direction-options:
-    auto: Follow original direction
+  render-text-orientation: Render text orientation
+  render-text-orientation-options:
+    auto: Follow original orientation
     horizontal: Horizontal only
   reset: Reset Settings
   target-language: Translate target language
@@ -46,5 +46,13 @@ settings:
   script-language-options:
     auto: Follow website language
   inline-options-title: Current Settings
+  detection-resolution-desc: >-
+    The resolution used to scan texts on an image, higher value will result in a
+    longer processing time with better accuracy.
+  script-language-desc: Language of this userscript.
+  render-text-orientation-desc: Overwrite the orientation of texts rendered in the translated image.
+  target-language-desc: The language that images are translated to.
+  text-detector-desc: The detector used to scan texts in an image.
+  translator-desc: The translate service used to translate texts.
 sponsor:
   text: If you find this script helpful, please consider sponsoring us on ko-fi!

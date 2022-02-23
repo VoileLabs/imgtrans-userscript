@@ -1,9 +1,9 @@
-import { detectionResolution, renderTextDirection, targetLang, textDetector, translator } from '../composables'
+import { detectionResolution, renderTextOrientation, targetLang, textDetector, translator } from '../composables'
 import { BCP47ToISO639, realLang, t, TranslateState } from '../i18n'
 
 export interface TranslateOptionsOverwrite {
   detectionResolution?: string
-  renderTextDirection?: string
+  renderTextOrientation?: string
 }
 export async function submitTranslate(blob: Blob, suffix: string, optionsOverwrite?: TranslateOptionsOverwrite) {
   const formData = new FormData()
@@ -11,7 +11,7 @@ export async function submitTranslate(blob: Blob, suffix: string, optionsOverwri
   formData.append('size', optionsOverwrite?.detectionResolution ?? detectionResolution.value)
   formData.append('translator', translator.value)
   formData.append('tgt_lang', targetLang.value || BCP47ToISO639(realLang.value))
-  formData.append('dir', optionsOverwrite?.renderTextDirection ?? renderTextDirection.value)
+  formData.append('dir', optionsOverwrite?.renderTextOrientation ?? renderTextOrientation.value)
   formData.append('detector', textDetector.value)
 
   const result = await GMP.xmlHttpRequest({

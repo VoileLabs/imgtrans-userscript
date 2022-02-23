@@ -1,7 +1,7 @@
 import { h, withModifiers } from 'vue'
 import {
   detectionResolution,
-  renderTextDirection,
+  renderTextOrientation,
   scriptLang,
   targetLang,
   textDetector,
@@ -17,8 +17,8 @@ export const detectResOptionsMap: Record<string, string> = {
 }
 export const detectResOptions = Object.keys(detectResOptionsMap)
 export const renderTextDirOptionsMap: Record<string, TranslateState> = {
-  auto: t('settings.render-text-direction-options.auto'),
-  horizontal: t('settings.render-text-direction-options.horizontal'),
+  auto: t('settings.render-text-orientation-options.auto'),
+  horizontal: t('settings.render-text-orientation-options.horizontal'),
 }
 export const renderTextDirOptions = Object.keys(renderTextDirOptionsMap)
 
@@ -52,257 +52,128 @@ export function renderSettings(options?: {
         },
         tt(t('sponsor.text'))
       ),
-      // Detection resolution
-      h(
-        'div',
-        {
-          style: {
-            ...(itemOrientation === 'horizontal'
-              ? {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }
-              : {}),
-          },
-        },
+      // Settings
+      ...[
         [
-          h(
-            'div',
-            {
-              style: {
-                ...textStyle,
-              },
-            },
-            tt(t('settings.detection-resolution'))
-          ),
-          h(
-            'select',
-            {
-              value: detectionResolution.value,
-              onChange(e: Event) {
-                detectionResolution.value = (e.target as HTMLSelectElement).value
-              },
-            },
-            Object.entries(detectResOptionsMap).map(([key, value]) => h('option', { value: key }, value))
-          ),
-        ]
-      ),
-      // Text detector
-      h(
-        'div',
-        {
-          style: {
-            ...(itemOrientation === 'horizontal'
-              ? {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }
-              : {}),
-          },
-        },
+          t('settings.detection-resolution'),
+          detectionResolution,
+          detectResOptionsMap,
+          t('settings.detection-resolution-desc'),
+        ] as const,
         [
-          h(
-            'div',
-            {
-              style: {
-                ...textStyle,
-              },
-            },
-            tt(t('settings.text-detector'))
-          ),
-          h(
-            'select',
-            {
-              value: textDetector.value,
-              onChange(e: Event) {
-                textDetector.value = (e.target as HTMLSelectElement).value
-              },
-            },
-            [
-              h('option', { value: 'auto' }, tt(t('settings.text-detector-options.auto'))),
-              h('option', { value: 'ctd' }, 'CTD'),
-            ]
-          ),
-        ]
-      ),
-      // Translator
-      h(
-        'div',
-        {
-          style: {
-            ...(itemOrientation === 'horizontal'
-              ? {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }
-              : {}),
+          t('settings.text-detector'),
+          textDetector,
+          {
+            auto: tt(t('settings.text-detector-options.auto')),
+            ctd: 'CTD',
           },
-        },
+          t('settings.text-detector-desc'),
+        ] as const,
         [
-          h(
-            'div',
-            {
-              style: {
-                ...textStyle,
-              },
-            },
-            tt(t('settings.translator'))
-          ),
-          h(
-            'select',
-            {
-              value: translator.value,
-              onChange(e: Event) {
-                translator.value = (e.target as HTMLSelectElement).value
-              },
-            },
-            [
-              h('option', { value: 'baidu' }, 'Baidu'),
-              h('option', { value: 'google' }, 'Google'),
-              h('option', { value: 'deepl' }, 'DeepL'),
-            ]
-          ),
-        ]
-      ),
-      // Render text direction
-      h(
-        'div',
-        {
-          style: {
-            ...(itemOrientation === 'horizontal'
-              ? {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }
-              : {}),
+          t('settings.translator'),
+          translator,
+          {
+            youdao: 'Youdao',
+            baidu: 'Baidu',
+            google: 'Google',
+            deepl: 'DeepL',
           },
-        },
+          t('settings.translator-desc'),
+        ] as const,
         [
-          h(
-            'div',
-            {
-              style: {
-                ...textStyle,
-              },
-            },
-            tt(t('settings.render-text-direction'))
-          ),
-          h(
-            'select',
-            {
-              value: renderTextDirection.value,
-              onChange(e: Event) {
-                renderTextDirection.value = (e.target as HTMLSelectElement).value
-              },
-            },
-            [
-              h('option', { value: 'auto' }, tt(t('settings.render-text-direction-options.auto'))),
-              h('option', { value: 'horizontal' }, tt(t('settings.render-text-direction-options.horizontal'))),
-            ]
-          ),
-        ]
-      ),
-      // Target language
-      h(
-        'div',
-        {
-          style: {
-            ...(itemOrientation === 'horizontal'
-              ? {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }
-              : {}),
+          t('settings.render-text-orientation'),
+          renderTextOrientation,
+          {
+            auto: tt(t('settings.render-text-orientation-options.auto')),
+            horizontal: tt(t('settings.render-text-orientation-options.horizontal')),
           },
-        },
+          t('settings.render-text-orientation-desc'),
+        ] as const,
         [
-          h(
-            'div',
-            {
-              style: {
-                ...textStyle,
-              },
-            },
-            tt(t('settings.target-language'))
-          ),
-          h(
-            'select',
-            {
-              value: targetLang.value,
-              onChange(e: Event) {
-                targetLang.value = (e.target as HTMLSelectElement).value
-              },
-            },
-            [
-              h('option', { value: '' }, tt(t('settings.target-language-options.auto'))),
-              ...[
-                ['CHS', '简体中文'],
-                ['CHT', '繁體中文'],
-                ['JPN', '日本語'],
-                ['ENG', 'English'],
-                ['KOR', '한국어'],
-                ['VIN', 'Tiếng Việt'],
-                ['CSY', 'čeština'],
-                ['NLD', 'Nederlands'],
-                ['FRA', 'français'],
-                ['DEU', 'Deutsch'],
-                ['HUN', 'magyar nyelv'],
-                ['ITA', 'italiano'],
-                ['PLK', 'polski'],
-                ['PTB', 'português'],
-                ['ROM', 'limba română'],
-                ['RUS', 'русский язык'],
-                ['ESP', 'español'],
-                ['TRK', 'Türk dili'],
-              ].map(([value, text]) => h('option', { value }, text)),
-            ]
-          ),
-        ]
-      ),
-      // Script language
-      h(
-        'div',
-        {
-          style: {
-            ...(itemOrientation === 'horizontal'
-              ? {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }
-              : {}),
+          t('settings.target-language'),
+          targetLang,
+          {
+            '': tt(t('settings.target-language-options.auto')),
+            CHS: '简体中文',
+            CHT: '繁體中文',
+            JPN: '日本語',
+            ENG: 'English',
+            KOR: '한국어',
+            VIN: 'Tiếng Việt',
+            CSY: 'čeština',
+            NLD: 'Nederlands',
+            FRA: 'français',
+            DEU: 'Deutsch',
+            HUN: 'magyar nyelv',
+            ITA: 'italiano',
+            PLK: 'polski',
+            PTB: 'português',
+            ROM: 'limba română',
+            RUS: 'русский язык',
+            ESP: 'español',
+            TRK: 'Türk dili',
           },
-        },
+          t('settings.target-language-desc'),
+        ] as const,
         [
-          h(
-            'div',
-            {
-              style: {
-                ...textStyle,
-              },
+          t('settings.script-language'),
+          scriptLang,
+          {
+            '': tt(t('settings.script-language-options.auto')),
+            'zh-CN': '简体中文',
+            'en-US': 'English',
+          },
+          t('settings.script-language-desc'),
+        ] as const,
+      ].map(([title, opt, optMap, desc]) =>
+        h(
+          'div',
+          {
+            style: {
+              ...(itemOrientation === 'horizontal'
+                ? {
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }
+                : {}),
             },
-            tt(t('settings.script-language'))
-          ),
-          h(
-            'select',
-            {
-              value: scriptLang.value,
-              onChange(e: Event) {
-                scriptLang.value = (e.target as HTMLSelectElement).value
+          },
+          [
+            h(
+              'div',
+              {
+                style: {
+                  ...textStyle,
+                },
               },
-            },
-            [
-              h('option', { value: '' }, tt(t('settings.script-language-options.auto'))),
-              h('option', { value: 'zh-CN' }, '简体中文'),
-              h('option', { value: 'en-US' }, 'English'),
-            ]
-          ),
-        ]
+              tt(title)
+            ),
+            h('div', {}, [
+              h(
+                'select',
+                {
+                  value: opt.value,
+                  onChange(e: Event) {
+                    opt.value = (e.target as HTMLSelectElement).value
+                  },
+                },
+                Object.entries(optMap).map(([key, value]) => h('option', { value: key }, value))
+              ),
+              desc
+                ? h(
+                    'div',
+                    {
+                      style: {
+                        fontSize: '13px',
+                      },
+                    },
+                    tt(desc)
+                  )
+                : undefined,
+            ]),
+          ]
+        )
       ),
       // Reset
       h('div', [
@@ -313,7 +184,7 @@ export function renderSettings(options?: {
               detectionResolution.value = null
               textDetector.value = null
               translator.value = null
-              renderTextDirection.value = null
+              renderTextOrientation.value = null
               targetLang.value = null
               scriptLang.value = null
             }, ['stop', 'prevent']),

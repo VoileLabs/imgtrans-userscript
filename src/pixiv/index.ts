@@ -13,7 +13,7 @@ import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
 import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { phash } from '../utils'
-import { detectionResolution, renderTextDirection } from '../composables'
+import { detectionResolution, renderTextOrientation } from '../composables'
 import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
 
 export default (): Translator => {
@@ -100,7 +100,7 @@ export default (): Translator => {
           const advDetectRes = ref(detectionResolution.value)
           const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
 
-          const advRenderTextDir = ref(renderTextDirection.value)
+          const advRenderTextDir = ref(renderTextOrientation.value)
           const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
 
           return () =>
@@ -186,7 +186,7 @@ export default (): Translator => {
                                       detectResOptionsMap,
                                     ] as const,
                                     [
-                                      t('settings.render-text-direction'),
+                                      t('settings.render-text-orientation'),
                                       advRenderTextDir,
                                       advRenderTextDirIndex,
                                       renderTextDirOptions,
@@ -257,7 +257,7 @@ export default (): Translator => {
                                         if (translateMounted.value) return
                                         enable({
                                           detectionResolution: advDetectRes.value,
-                                          renderTextDirection: advRenderTextDir.value,
+                                          renderTextOrientation: advRenderTextDir.value,
                                         })
                                         advancedMenuOpen.value = false
                                       }, ['stop', 'prevent']),

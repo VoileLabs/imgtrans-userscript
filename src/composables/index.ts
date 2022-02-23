@@ -47,7 +47,7 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
 
 export const detectionResolution = useGMStorage('detectionResolution', 'M')
 export const textDetector = useGMStorage('textDetector', 'auto')
-export const translator = useGMStorage('translator', 'baidu')
-export const renderTextDirection = useGMStorage('renderTextDirection', 'auto')
+export const translator = useGMStorage('translator', 'youdao')
+export const renderTextOrientation = useGMStorage('renderTextOrientation', 'auto')
 export const targetLang = useGMStorage('targetLang')
 export const scriptLang = useGMStorage('scriptLanguage')
