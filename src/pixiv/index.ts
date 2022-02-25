@@ -12,7 +12,7 @@ import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
 import IconCarbonChevronRight from '~icons/carbon/chevron-right'
-import { phash } from '../utils'
+import { formatProgress, phash } from '../utils'
 import { detectionResolution, renderTextOrientation } from '../composables'
 import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
 
@@ -358,6 +358,13 @@ export default (): Translator => {
           url: originalSrc,
           headers: { referer: 'https://www.pixiv.net/' },
           overrideMimeType: 'text/plain; charset=x-user-defined',
+          onprogress(e) {
+            if (e.lengthComputable) {
+              buttonText.value = t('common.source.download-image-progress', {
+                progress: formatProgress(e.loaded, e.total),
+              })
+            }
+          },
         }).catch((e) => {
           buttonText.value = t('common.source.download-image-error')
           throw e
@@ -371,7 +378,16 @@ export default (): Translator => {
         console.warn(e)
       }
       buttonText.value = t('common.client.submit')
-      const id = await submitTranslate(originalImage, originalSrcSuffix, optionsOverwrite).catch((e) => {
+      const id = await submitTranslate(
+        originalImage,
+        originalSrcSuffix,
+        {
+          onProgress(progress) {
+            buttonText.value = t('common.client.submit-progress', { progress })
+          },
+        },
+        optionsOverwrite
+      ).catch((e) => {
         buttonText.value = t('common.client.submit-error')
         throw e
       })
@@ -389,6 +405,13 @@ export default (): Translator => {
         method: 'GET',
         responseType: 'blob',
         url: 'https://touhou.ai/imgtrans/result/' + id + '/final.png',
+        onprogress(e) {
+          if (e.lengthComputable) {
+            buttonText.value = t('common.client.download-image-progress', {
+              progress: formatProgress(e.loaded, e.total),
+            })
+          }
+        },
       }).catch((e) => {
         buttonText.value = t('common.client.download-image-error')
         throw e

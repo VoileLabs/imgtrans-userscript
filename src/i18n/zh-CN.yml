@@ -1,11 +1,14 @@
 common:
   source:
     download-image: 正在拉取原图
+    download-image-progress: 正在拉取原图({progress})
     download-image-error: 拉取原图出错
   client:
     submit: 正在提交翻译
+    submit-progress: 正在提交翻译({progress})
     submit-error: 提交翻译出错
     download-image: 正在下载图片
+    download-image-progress: 正在下载图片({progress})
     download-image-error: 下载图片出错
   status:
     default: 未知状态

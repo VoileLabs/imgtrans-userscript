@@ -1,3 +1,4 @@
+import { formatProgress } from '.'
 import { detectionResolution, renderTextOrientation, targetLang, textDetector, translator } from '../composables'
 import { BCP47ToISO639, realLang, t, TranslateState } from '../i18n'
 
@@ -5,7 +6,16 @@ export interface TranslateOptionsOverwrite {
   detectionResolution?: string
   renderTextOrientation?: string
 }
-export async function submitTranslate(blob: Blob, suffix: string, optionsOverwrite?: TranslateOptionsOverwrite) {
+export async function submitTranslate(
+  blob: Blob,
+  suffix: string,
+  listeners: {
+    onProgress?: (progress: string) => void
+  } = {},
+  optionsOverwrite?: TranslateOptionsOverwrite
+) {
+  const { onProgress } = listeners
+
   const formData = new FormData()
   formData.append('file', blob, 'image.' + suffix)
   formData.append('size', optionsOverwrite?.detectionResolution ?? detectionResolution.value)
@@ -19,6 +29,17 @@ export async function submitTranslate(blob: Blob, suffix: string, optionsOverwri
     url: 'https://touhou.ai/imgtrans/submit',
     // @ts-expect-error FormData is supported
     data: formData,
+    // supported in GM
+    upload: {
+      onprogress: onProgress
+        ? (e: ProgressEvent) => {
+            if (e.lengthComputable) {
+              const p = formatProgress(e.loaded, e.total)
+              onProgress(p)
+            }
+          }
+        : undefined,
+    },
   })
 
   const json = JSON.parse(result.responseText)

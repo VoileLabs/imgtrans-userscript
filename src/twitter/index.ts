@@ -26,7 +26,7 @@ import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
 import IconCarbonChevronRight from '~icons/carbon/chevron-right'
-import { phash } from '../utils'
+import { formatProgress, phash } from '../utils'
 import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
 import { detectionResolution, renderTextOrientation } from '../composables'
 
@@ -95,6 +95,17 @@ export default (): Translator => {
           url,
           headers: { referer: 'https://twitter.com/' },
           overrideMimeType: 'text/plain; charset=x-user-defined',
+          onprogress(e) {
+            if (e.lengthComputable) {
+              translateStatusMap[url] = computed(() =>
+                tt(
+                  t('common.source.download-image-progress', {
+                    progress: formatProgress(e.loaded, e.total),
+                  })
+                )
+              )
+            }
+          },
         }).catch((e) => {
           translateStatusMap[url] = computed(() => tt(t('common.source.download-image-error')))
           throw e
@@ -111,7 +122,16 @@ export default (): Translator => {
       }
       translateStatusMap[url] = computed(() => tt(t('common.client.submit')))
       const originalSrcSuffix = url.split('.').pop()!
-      const id = await submitTranslate(originalImage, originalSrcSuffix, optionsOverwrite).catch((e) => {
+      const id = await submitTranslate(
+        originalImage,
+        originalSrcSuffix,
+        {
+          onProgress(progress) {
+            translateStatusMap[url] = computed(() => tt(t('common.client.submit-progress', { progress })))
+          },
+        },
+        optionsOverwrite
+      ).catch((e) => {
         translateStatusMap[url] = computed(() => tt(t('common.client.submit-error')))
         throw e
       })
@@ -129,6 +149,17 @@ export default (): Translator => {
         method: 'GET',
         responseType: 'blob',
         url: 'https://touhou.ai/imgtrans/result/' + id + '/final.png',
+        onprogress(e) {
+          if (e.lengthComputable) {
+            translateStatusMap[url] = computed(() =>
+              tt(
+                t('common.client.download-image-progress', {
+                  progress: formatProgress(e.loaded, e.total),
+                })
+              )
+            )
+          }
+        },
       }).catch((e) => {
         translateStatusMap[url] = computed(() => tt(t('common.client.download-image-error')))
         throw e
