@@ -504,11 +504,11 @@ export default (): Translator => {
   }
 
   const onLayersUpdate = () => {
-    rescanLayers()
     layersObserver = new MutationObserver((mutations) => {
       rescanLayers()
     })
     layersObserver.observe(layers!, { childList: true, subtree: true })
+    rescanLayers()
   }
 
   if (layers) onLayersUpdate()

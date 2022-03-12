@@ -612,6 +612,8 @@ export default (): Translator => {
     refreshTransAll()
   })
   imageObserver.observe(document.body, { childList: true, subtree: true })
+  rescanImages()
+  refreshTransAll()
 
   return {
     stop() {
