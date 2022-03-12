@@ -1,27 +1,23 @@
+import type { ComputedRef, Ref } from 'vue'
+import { nextTick } from 'vue'
 import {
   computed,
-  ComputedRef,
   createApp,
   defineComponent,
   h,
   reactive,
   ref,
-  Ref,
   shallowReactive,
   triggerRef,
   watch,
   watchEffect,
   withModifiers,
 } from 'vue'
-import { Translator } from '../main'
+import type { Translator } from '../main'
 import { t, tt } from '../i18n'
-import {
-  blobToImageData,
-  getStatusText,
-  pullTransStatusUntilFinish,
-  submitTranslate,
-  TranslateOptionsOverwrite,
-} from '../utils/core'
+import type { TranslateOptionsOverwrite } from '../utils/core'
+import { resizeToSubmit } from '../utils/core'
+import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
@@ -113,18 +109,25 @@ export default (): Translator => {
         originalImageMap[url] = result.response as Blob
       }
       const originalImage = originalImageMap[url]
+      const originalSrcSuffix = new URL(url).searchParams.get('format') || url.split('.')[1] || 'jpg'
 
+      translateStatusMap[url] = computed(() => tt(t('common.client.resize')))
+      await nextTick()
+      const { blob: resizedImage, suffix: resizedSuffix } = await resizeToSubmit(originalImage, originalSrcSuffix)
+
+      translateStatusMap[url] = computed(() => tt(t('common.client.hash')))
+      await nextTick()
       try {
-        const imageData = await blobToImageData(originalImage)
+        const imageData = await blobToImageData(resizedImage)
         console.log('phash', phash(imageData))
       } catch (e) {
         console.warn(e)
       }
+
       translateStatusMap[url] = computed(() => tt(t('common.client.submit')))
-      const originalSrcSuffix = url.split('.').pop()!
       const id = await submitTranslate(
-        originalImage,
-        originalSrcSuffix,
+        resizedImage,
+        resizedSuffix,
         {
           onProgress(progress) {
             translateStatusMap[url] = computed(() => tt(t('common.client.submit-progress', { progress })))

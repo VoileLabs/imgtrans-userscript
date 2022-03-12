@@ -10,6 +10,8 @@ common:
     download-image: Downloading translated image
     download-image-progress: Downloading translated image ({progress})
     download-image-error: Error during translated image download
+    hash: Hashing image
+    resize: Resizing image
   status:
     default: Unknown status
     pending: Pending
@@ -58,4 +60,4 @@ settings:
   text-detector-desc: The detector used to scan texts in an image.
   translator-desc: The translate service used to translate texts.
 sponsor:
-  text: If you find this script helpful, please consider sponsoring us on ko-fi!
+  text: If you find this script helpful, please consider supporting us!

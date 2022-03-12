@@ -1,4 +1,5 @@
-import { effectScope, EffectScope, onScopeDispose } from 'vue'
+import type { EffectScope } from 'vue'
+import { effectScope, onScopeDispose } from 'vue'
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
 import pixiv from './pixiv'

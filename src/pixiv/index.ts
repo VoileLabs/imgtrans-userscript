@@ -1,13 +1,10 @@
-import { computed, createApp, defineComponent, h, ref, withModifiers } from 'vue'
-import { Translator } from '../main'
-import {
-  blobToImageData,
-  getStatusText,
-  pullTransStatusUntilFinish,
-  submitTranslate,
-  TranslateOptionsOverwrite,
-} from '../utils/core'
-import { t, TranslateState, tt } from '../i18n'
+import { computed, createApp, defineComponent, h, nextTick, ref, withModifiers } from 'vue'
+import type { Translator } from '../main'
+import type { TranslateOptionsOverwrite } from '../utils/core'
+import { resizeToSubmit } from '../utils/core'
+import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
+import type { TranslateState } from '../i18n'
+import { t, tt } from '../i18n'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
@@ -30,36 +27,63 @@ export default (): Translator => {
   const translatedMap = new Map<string, string>()
   const translateEnabledMap = new Map<string, boolean>()
 
-  function rescanImages() {
-    const imageNodes = Array.from(document.querySelectorAll('img') as NodeListOf<HTMLImageElement>).filter(
+  function findImageNodes(node: HTMLElement) {
+    return Array.from(node.querySelectorAll('img') as NodeListOf<HTMLImageElement>).filter(
       (node) =>
         node.hasAttribute('srcset') ||
         node.hasAttribute('data-trans') ||
         node.parentElement?.classList.contains('sc-1pkrz0g-1')
     )
+  }
+
+  function rescanImages(added?: HTMLElement[], removed?: HTMLElement[]) {
+    if (added && removed) {
+      for (const parent of added) {
+        const nodes = findImageNodes(parent)
+        for (const node of nodes) {
+          if (images.has(node)) continue
+          try {
+            instances.set(node, mountToNode(node))
+            images.add(node)
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+      for (const parent of removed) {
+        const nodes = findImageNodes(parent)
+        for (const node of nodes) {
+          if (!instances.has(node)) continue
+          const instance = instances.get(node)!
+          instance.stop()
+          instances.delete(node)
+          images.delete(node)
+        }
+      }
+      return
+    }
+    const imageNodes = findImageNodes(document.body)
     const removedImages = new Set(images)
     for (const node of imageNodes) {
       removedImages.delete(node)
-      if (!images.has(node)) {
-        // new image
-        // console.log('new', node)
-        try {
-          instances.set(node, mountToNode(node))
-          images.add(node)
-        } catch (e) {
-          // ignore
-        }
+      if (images.has(node)) continue
+      // new image
+      // console.log('new', node)
+      try {
+        instances.set(node, mountToNode(node))
+        images.add(node)
+      } catch (e) {
+        // ignore
       }
     }
     for (const node of removedImages) {
       // removed image
       // console.log('remove', node)
-      if (instances.has(node)) {
-        const instance = instances.get(node)!
-        instance.stop()
-        instances.delete(node)
-        images.delete(node)
-      }
+      if (!instances.has(node)) continue
+      const instance = instances.get(node)!
+      instance.stop()
+      instances.delete(node)
+      images.delete(node)
     }
   }
 
@@ -78,7 +102,7 @@ export default (): Translator => {
 
     let originalImage: Blob | undefined
     let translatedImage = translatedMap.get(originalSrc)
-    let translateMounted = ref(false)
+    const translateMounted = ref(false)
     let buttonDisabled = false
 
     const buttonProcessing = ref(false)
@@ -371,16 +395,24 @@ export default (): Translator => {
         })
         originalImage = result.response as Blob
       }
+
+      buttonText.value = t('common.client.resize')
+      await nextTick()
+      const { blob: resizedImage, suffix: resizedSuffix } = await resizeToSubmit(originalImage, originalSrcSuffix)
+
+      buttonText.value = t('common.client.hash')
+      await nextTick()
       try {
-        const imageData = await blobToImageData(originalImage)
+        const imageData = await blobToImageData(resizedImage)
         console.log('phash', phash(imageData))
       } catch (e) {
         console.warn(e)
       }
+
       buttonText.value = t('common.client.submit')
       const id = await submitTranslate(
-        originalImage,
-        originalSrcSuffix,
+        resizedImage,
+        resizedSuffix,
         {
           onProgress(progress) {
             buttonText.value = t('common.client.submit-progress', { progress })
@@ -565,7 +597,18 @@ export default (): Translator => {
   }
 
   const imageObserver = new MutationObserver((mutations) => {
-    rescanImages()
+    const added: HTMLElement[] = []
+    const removed: HTMLElement[] = []
+    for (const mutation of mutations) {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) added.push(node)
+      })
+      mutation.removedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) removed.push(node)
+      })
+    }
+
+    rescanImages(added, removed)
     refreshTransAll()
   })
   imageObserver.observe(document.body, { childList: true, subtree: true })

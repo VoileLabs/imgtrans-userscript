@@ -9,6 +9,7 @@
 // @license           MIT
 // @contributionURL   https://ko-fi.com/voilelabs
 // @supportURL        https://github.com/VoileLabs/imgtrans-userscript/issues
+// @source            https://github.com/VoileLabs/imgtrans-userscript
 // @require https://unpkg.com/vue@{{versionVue}}/dist/vue.runtime.global.prod.js
 // @require https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.js
 // @resource wasm https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.wasm

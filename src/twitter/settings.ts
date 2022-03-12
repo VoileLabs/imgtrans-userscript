@@ -1,6 +1,7 @@
-import { App, createApp, defineComponent, h, onUnmounted } from 'vue'
+import type { App } from 'vue'
+import { createApp, defineComponent, h, onUnmounted } from 'vue'
 import { t, tt } from '../i18n'
-import { SettingsInjector } from '../main'
+import type { SettingsInjector } from '../main'
 import { renderSettings } from '../settings'
 
 export default (): SettingsInjector => {

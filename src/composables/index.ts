@@ -1,4 +1,5 @@
-import { onScopeDispose, ref, Ref, UnwrapRef, watch } from 'vue'
+import type { Ref, UnwrapRef } from 'vue'
+import { onScopeDispose, ref, watch } from 'vue'
 
 export type RemovableRef<T> = Omit<Ref<T>, 'value'> & {
   get value(): T

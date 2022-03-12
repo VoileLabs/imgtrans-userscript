@@ -7,7 +7,8 @@ import {
   textDetector,
   translator,
 } from '../composables'
-import { t, TranslateState, tt } from '../i18n'
+import type { TranslateState } from '../i18n'
+import { t, tt } from '../i18n'
 
 export const detectResOptionsMap: Record<string, string> = {
   S: '1024px',
@@ -40,17 +41,57 @@ export function renderSettings(options?: {
     [
       // Sponsor
       h(
-        'a',
+        'div',
         {
-          href: 'https://ko-fi.com/voilelabs',
-          target: '_blank',
-          rel: 'noopener noreferrer',
           style: {
-            color: '#2563EB',
-            textDecoration: 'none',
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'nowrap',
+            gap: '4px',
           },
         },
-        tt(t('sponsor.text'))
+        [
+          tt(t('sponsor.text')),
+          h(
+            'a',
+            {
+              href: 'https://ko-fi.com/voilelabs',
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              style: {
+                color: '#2563EB',
+                textDecoration: 'underline',
+              },
+            },
+            'ko-fi'
+          ),
+          h(
+            'a',
+            {
+              href: 'https://patreon.com/voilelabs',
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              style: {
+                color: '#2563EB',
+                textDecoration: 'underline',
+              },
+            },
+            'Patreon'
+          ),
+          h(
+            'a',
+            {
+              href: 'https://afdian.net/@voilelabs',
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              style: {
+                color: '#2563EB',
+                textDecoration: 'underline',
+              },
+            },
+            '爱发电'
+          ),
+        ]
       ),
       // Settings
       ...[

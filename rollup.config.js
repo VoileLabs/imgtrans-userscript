@@ -20,7 +20,7 @@ export default defineConfig({
       .readFileSync('src/banner.js', 'utf8')
       .replace(/{{version}}/g, version)
       .replace(/{{versionVue}}/g, dependencies.vue.replace(/^\^/, ''))
-      .replace(/{{wasmCommit}}/g, '52909c7d912cb34f1c905ae18c9e086363216c9c')
+      .replace(/{{wasmCommit}}/g, '777037c9b1f6b734d21aa4b074d79aa73e6ba352')
       .replace(
         '// {{license}}',
         fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })

@@ -1,6 +1,27 @@
-import { formatProgress } from '.'
+import { formatProgress, formatSize, resize } from '.'
 import { detectionResolution, renderTextOrientation, targetLang, textDetector, translator } from '../composables'
-import { BCP47ToISO639, realLang, t, TranslateState } from '../i18n'
+import type { TranslateState } from '../i18n'
+import { BCP47ToISO639, realLang, t } from '../i18n'
+
+export async function resizeToSubmit(blob: Blob, suffix: string): Promise<{ blob: Blob; suffix: string }> {
+  const imageData = await blobToImageData(blob)
+  if (imageData.width <= 4000 && imageData.height <= 4000) return { blob, suffix }
+  // resize to less than 4k
+  const scale = Math.min(4000 / imageData.width, 4000 / imageData.height)
+  const width = Math.floor(imageData.width * scale)
+  const height = Math.floor(imageData.height * scale)
+  const newImageData = resize(imageData, width, height)
+  const newBlob = await imageDataToBlob(newImageData)
+  console.log(
+    `resized from ${imageData.width}x${imageData.height}(${formatSize(
+      blob.size
+    )},${suffix}) to ${width}x${height}(${formatSize(newBlob.size)},png)`
+  )
+  return {
+    blob: newBlob,
+    suffix: 'png',
+  }
+}
 
 export interface TranslateOptionsOverwrite {
   detectionResolution?: string
@@ -42,6 +63,7 @@ export async function submitTranslate(
     },
   })
 
+  console.log(result.responseText)
   const json = JSON.parse(result.responseText)
   const id = json.task_id as string
   return id
@@ -134,4 +156,24 @@ export function blobToImageData(blob: Blob): Promise<ImageData> {
 
     return ctx.getImageData(0, 0, w, h)
   })
+}
+
+export async function imageDataToBlob(imageData: ImageData): Promise<Blob> {
+  const canvas = document.createElement('canvas')
+  canvas.width = imageData.width
+  canvas.height = imageData.height
+  const ctx = canvas.getContext('2d')!
+  ctx.putImageData(imageData, 0, 0)
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob)
+      } else {
+        reject(new Error('Canvas toBlob failed'))
+      }
+    }, 'image/png')
+  })
+
+  return blob
 }

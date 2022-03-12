@@ -10,6 +10,8 @@ common:
     download-image: 正在下载图片
     download-image-progress: 正在下载图片({progress})
     download-image-error: 下载图片出错
+    hash: 正在哈希图片
+    resize: 正在缩放图片
   status:
     default: 未知状态
     pending: 正在等待
@@ -56,4 +58,4 @@ settings:
   target-language-desc: 设置图片翻译后的语言。
   script-language-desc: 设置此用户脚本的语言。
 sponsor:
-  text: 制作不易，请考虑在 ko-fi 赞助我们！
+  text: 制作不易，请考虑赞助我们！
