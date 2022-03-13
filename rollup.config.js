@@ -20,6 +20,8 @@ export default defineConfig({
       .readFileSync('src/banner.js', 'utf8')
       .replace(/{{version}}/g, version)
       .replace(/{{versionVue}}/g, dependencies.vue.replace(/^\^/, ''))
+      .replace(/{{versionVueuseShared}}/g, dependencies['@vueuse/shared'].replace(/^\^/, ''))
+      .replace(/{{versionVueuseCore}}/g, dependencies['@vueuse/core'].replace(/^\^/, ''))
       .replace(/{{wasmCommit}}/g, '777037c9b1f6b734d21aa4b074d79aa73e6ba352')
       .replace(
         '// {{license}}',
@@ -29,6 +31,8 @@ export default defineConfig({
       ),
     globals: {
       vue: 'Vue',
+      '@vueuse/shared': 'VueUse',
+      '@vueuse/core': 'VueUse',
       wasmJsModule: 'wasmJsModule',
     },
   },

@@ -1,3 +1,4 @@
+import { useThrottleFn } from '@vueuse/shared'
 import type { App } from 'vue'
 import { createApp, defineComponent, h, onUnmounted } from 'vue'
 import { t, tt } from '../i18n'
@@ -114,34 +115,41 @@ export default (): SettingsInjector => {
     settingsApp.mount(settingsContainer)
   }
 
-  const listObserver = new MutationObserver(() => {
-    checkTab()
-    if (location.pathname.match(/\/settings\/__imgtrans/)) {
-      if (settingsTab && settingsTab.children.length < 2) {
-        settingsTab.style.backgroundColor = '#F7F9F9'
-        const activeIndicator = document.createElement('div')
-        activeIndicator.style.position = 'absolute'
-        activeIndicator.style.zIndex = '1'
-        activeIndicator.style.top = '0'
-        activeIndicator.style.left = '0'
-        activeIndicator.style.bottom = '0'
-        activeIndicator.style.right = '0'
-        activeIndicator.style.borderRight = '2px solid #1D9Bf0'
-        activeIndicator.style.pointerEvents = 'none'
-        settingsTab.appendChild(activeIndicator)
-      }
-      checkSettings()
-    } else {
-      if (settingsTab && settingsTab.children.length > 1) {
-        settingsTab.style.backgroundColor = ''
-        settingsTab.removeChild(settingsTab.lastChild!)
-      }
-      if (settingsApp) {
-        settingsApp.unmount()
-        settingsApp = undefined
-      }
-    }
-  })
+  const listObserver = new MutationObserver(
+    useThrottleFn(
+      () => {
+        checkTab()
+        if (location.pathname.match(/\/settings\/__imgtrans/)) {
+          if (settingsTab && settingsTab.children.length < 2) {
+            settingsTab.style.backgroundColor = '#F7F9F9'
+            const activeIndicator = document.createElement('div')
+            activeIndicator.style.position = 'absolute'
+            activeIndicator.style.zIndex = '1'
+            activeIndicator.style.top = '0'
+            activeIndicator.style.left = '0'
+            activeIndicator.style.bottom = '0'
+            activeIndicator.style.right = '0'
+            activeIndicator.style.borderRight = '2px solid #1D9Bf0'
+            activeIndicator.style.pointerEvents = 'none'
+            settingsTab.appendChild(activeIndicator)
+          }
+          checkSettings()
+        } else {
+          if (settingsTab && settingsTab.children.length > 1) {
+            settingsTab.style.backgroundColor = ''
+            settingsTab.removeChild(settingsTab.lastChild!)
+          }
+          if (settingsApp) {
+            settingsApp.unmount()
+            settingsApp = undefined
+          }
+        }
+      },
+      200,
+      true,
+      false
+    )
+  )
   listObserver.observe(document.body, { childList: true, subtree: true })
 
   return {

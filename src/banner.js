@@ -10,7 +10,7 @@
 // @contributionURL   https://ko-fi.com/voilelabs
 // @supportURL        https://github.com/VoileLabs/imgtrans-userscript/issues
 // @source            https://github.com/VoileLabs/imgtrans-userscript
-// @require https://unpkg.com/vue@{{versionVue}}/dist/vue.runtime.global.prod.js
+// @require https://cdn.jsdelivr.net/combine/npm/vue@{{versionVue}}/dist/vue.runtime.global.prod.js,npm/@vueuse/shared@{{versionVueuseShared}}/index.iife.min.js,npm/@vueuse/core@{{versionVueuseCore}}/index.iife.min.js
 // @require https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.js
 // @resource wasm https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.wasm
 // @include http*://www.pixiv.net/*
@@ -36,6 +36,7 @@
 // @grant GM_removeValueChangeListener
 // @grant GM.getResourceUrl
 // @grant GM_getResourceURL
+// @grant window.onurlchange
 // @run-at document-end
 // ==/UserScript==
 

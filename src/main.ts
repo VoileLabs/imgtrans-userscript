@@ -11,6 +11,7 @@ import init from '../wasm/pkg/wasm'
 import { setWasm } from '../wasm/pkg/wasm'
 // @ts-ignore
 import wasmJsModule from 'wasmJsModule'
+import { useThrottleFn } from '@vueuse/shared'
 
 export interface Translator {
   canKeep?: (url: string) => boolean | null | undefined
@@ -130,7 +131,12 @@ Promise.allSettled([initWasm()]).then((results) => {
   for (const result of results) {
     if (result.status === 'rejected') console.warn(result.reason)
   }
-  const installObserver = new MutationObserver(onUpdate)
-  installObserver.observe(document.body, { childList: true, subtree: true })
+  // @ts-expect-error Tampermonkey specific
+  if (window.onurlchange === null) {
+    window.addEventListener('urlchange', onUpdate)
+  } else {
+    const installObserver = new MutationObserver(useThrottleFn(onUpdate, 200, true, false))
+    installObserver.observe(document.body, { childList: true, subtree: true })
+  }
   onUpdate()
 })

@@ -25,6 +25,7 @@ import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { formatProgress, phash } from '../utils'
 import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
 import { detectionResolution, renderTextOrientation } from '../composables'
+import { useThrottleFn } from '@vueuse/shared'
 
 export default (): Translator => {
   const statusId = location.pathname.match(/\/status\/(\d+)/)?.[1]
@@ -504,22 +505,36 @@ export default (): Translator => {
   }
 
   const onLayersUpdate = () => {
-    layersObserver = new MutationObserver((mutations) => {
-      rescanLayers()
-    })
+    layersObserver = new MutationObserver(
+      useThrottleFn(
+        () => {
+          rescanLayers()
+        },
+        200,
+        true,
+        false
+      )
+    )
     layersObserver.observe(layers!, { childList: true, subtree: true })
     rescanLayers()
   }
 
   if (layers) onLayersUpdate()
   else {
-    initObserver = new MutationObserver((mutations) => {
-      layers = document.getElementById('layers')
-      if (layers) {
-        onLayersUpdate()
-        initObserver?.disconnect()
-      }
-    })
+    initObserver = new MutationObserver(
+      useThrottleFn(
+        () => {
+          layers = document.getElementById('layers')
+          if (layers) {
+            onLayersUpdate()
+            initObserver?.disconnect()
+          }
+        },
+        200,
+        true,
+        false
+      )
+    )
     initObserver.observe(document.body, { childList: true, subtree: true })
   }
 

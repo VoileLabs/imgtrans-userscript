@@ -12,6 +12,7 @@ import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { formatProgress, phash } from '../utils'
 import { detectionResolution, renderTextOrientation } from '../composables'
 import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
+import { useThrottleFn } from '@vueuse/shared'
 
 export default (): Translator => {
   interface Instance {
@@ -596,6 +597,7 @@ export default (): Translator => {
     }
   }
 
+  const throttledRefreshTransAll = useThrottleFn(refreshTransAll, 200, true, false)
   const imageObserver = new MutationObserver((mutations) => {
     const added: HTMLElement[] = []
     const removed: HTMLElement[] = []
@@ -609,11 +611,11 @@ export default (): Translator => {
     }
 
     rescanImages(added, removed)
-    refreshTransAll()
+    throttledRefreshTransAll()
   })
   imageObserver.observe(document.body, { childList: true, subtree: true })
   rescanImages()
-  refreshTransAll()
+  throttledRefreshTransAll()
 
   return {
     stop() {

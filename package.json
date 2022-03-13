@@ -1,6 +1,6 @@
 {
   "name": "imgtrans-userscript",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "private": true,
   "scripts": {
     "build": "rollup -c",
@@ -39,6 +39,8 @@
     "vitest": "^0.6.0"
   },
   "dependencies": {
+    "@vueuse/core": "^8.0.0",
+    "@vueuse/shared": "^8.0.0",
     "vue": "^3.2.31"
   }
 }
