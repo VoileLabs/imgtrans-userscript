@@ -37,32 +37,7 @@ export default (): Translator => {
     )
   }
 
-  function rescanImages(added?: HTMLElement[], removed?: HTMLElement[]) {
-    if (added && removed) {
-      for (const parent of added) {
-        const nodes = findImageNodes(parent)
-        for (const node of nodes) {
-          if (images.has(node)) continue
-          try {
-            instances.set(node, mountToNode(node))
-            images.add(node)
-          } catch (e) {
-            // ignore
-          }
-        }
-      }
-      for (const parent of removed) {
-        const nodes = findImageNodes(parent)
-        for (const node of nodes) {
-          if (!instances.has(node)) continue
-          const instance = instances.get(node)!
-          instance.stop()
-          instances.delete(node)
-          images.delete(node)
-        }
-      }
-      return
-    }
+  function rescanImages() {
     const imageNodes = findImageNodes(document.body)
     const removedImages = new Set(images)
     for (const node of imageNodes) {
@@ -597,25 +572,20 @@ export default (): Translator => {
     }
   }
 
-  const throttledRefreshTransAll = useThrottleFn(refreshTransAll, 200, true, false)
-  const imageObserver = new MutationObserver((mutations) => {
-    const added: HTMLElement[] = []
-    const removed: HTMLElement[] = []
-    for (const mutation of mutations) {
-      mutation.addedNodes.forEach((node) => {
-        if (node instanceof HTMLElement) added.push(node)
-      })
-      mutation.removedNodes.forEach((node) => {
-        if (node instanceof HTMLElement) removed.push(node)
-      })
-    }
-
-    rescanImages(added, removed)
-    throttledRefreshTransAll()
-  })
+  const imageObserver = new MutationObserver(
+    useThrottleFn(
+      () => {
+        rescanImages()
+        refreshTransAll()
+      },
+      200,
+      true,
+      false
+    )
+  )
   imageObserver.observe(document.body, { childList: true, subtree: true })
   rescanImages()
-  throttledRefreshTransAll()
+  refreshTransAll()
 
   return {
     stop() {
