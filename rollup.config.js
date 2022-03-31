@@ -8,7 +8,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import icons from 'unplugin-icons/rollup'
 import yaml from '@rollup/plugin-yaml'
-import { version, dependencies } from './package.json'
+import { dependencies, version } from './package.json'
 
 export default defineConfig({
   input: 'src/main.ts',
@@ -36,7 +36,7 @@ export default defineConfig({
       wasmJsModule: 'wasmJsModule',
     },
   },
-  external: ['vue', 'wasmJsModule'],
+  external: ['vue', '@vueuse/shared', '@vueuse/core', 'wasmJsModule'],
   plugins: [
     emptyDir(),
     nodeResolve(),

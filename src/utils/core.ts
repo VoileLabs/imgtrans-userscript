@@ -77,7 +77,7 @@ interface Status {
 export async function getTranslateStatus(id: string): Promise<Status> {
   const result = await GMP.xmlHttpRequest({
     method: 'GET',
-    url: 'https://touhou.ai/imgtrans/task-state?taskid=' + id,
+    url: `https://touhou.ai/imgtrans/task-state?taskid=${id}`,
   })
   const data = JSON.parse(result.responseText)
   return {
@@ -132,6 +132,31 @@ export async function pullTransStatusUntilFinish(id: string, cb: (status: Status
 
     await timer
   }
+}
+
+export async function downloadResultBlob(
+  id: string,
+  listeners: {
+    onProgress?: (progress: string) => void
+  } = {}
+): Promise<Blob> {
+  const { onProgress } = listeners
+
+  const res = await GMP.xmlHttpRequest({
+    method: 'GET',
+    responseType: 'blob',
+    url: `https://touhou.ai/imgtrans/result/${id}/final.png`,
+    onprogress: onProgress
+      ? (e) => {
+          if (e.lengthComputable) {
+            const p = formatProgress(e.loaded, e.total)
+            onProgress(p)
+          }
+        }
+      : undefined,
+  })
+
+  return res.response as Blob
 }
 
 export function blobToImageData(blob: Blob): Promise<ImageData> {

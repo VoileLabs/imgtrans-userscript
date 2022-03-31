@@ -7,24 +7,39 @@
  * @type {import('eslint').Linter.Config}
  */
 module.exports = {
-  /**
-   * Config Root
-   */
   root: true,
-  /**
-   * Custom Rules
-   */
-  rules: {},
-  /**
-   * Custom Groups
-   */
+  extends: [
+    'eslint:recommended',
+    'plugin:import/recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+  ],
+  rules: {
+    'import/named': 'off',
+    'import/no-unresolved': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports', disallowTypeAnnotations: false }],
+    'sort-imports': [
+      'error',
+      {
+        ignoreCase: false,
+        ignoreDeclarationSort: true,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+        allowSeparatedGroups: false,
+      },
+    ],
+  },
   overrides: [
     {
       files: ['./*.config.js', './*rc.js', '**/scripts/**/*.js', './public/**/*.js'],
       env: {
         node: true,
       },
-      extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
     },
     {
       files: ['*.js', '*.jsx'],
@@ -32,7 +47,6 @@ module.exports = {
         es2020: true,
         browser: true,
       },
-      extends: ['eslint:recommended', 'plugin:prettier/recommended'],
     },
     {
       files: ['*.ts', '*.tsx'],
@@ -41,14 +55,22 @@ module.exports = {
         browser: true,
       },
       parser: '@typescript-eslint/parser',
-      extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
-      rules: {
-        '@typescript-eslint/no-unused-vars': 'off',
-        '@typescript-eslint/no-non-null-assertion': 'off',
-        '@typescript-eslint/consistent-type-imports': [
-          'error',
-          { prefer: 'type-imports', disallowTypeAnnotations: false },
-        ],
+    },
+    {
+      files: ['*.vue'],
+      env: {
+        es2020: true,
+        browser: true,
+      },
+      parser: 'vue-eslint-parser',
+      parserOptions: {
+        parser: '@typescript-eslint/parser',
+      },
+      globals: {
+        defineProps: 'readonly',
+        defineEmits: 'readonly',
+        defineExpose: 'readonly',
+        withDefaults: 'readonly',
       },
     },
   ],

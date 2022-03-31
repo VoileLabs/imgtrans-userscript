@@ -41,6 +41,11 @@ export const tt = ({ key, props }: TranslateState) => {
   })
 }
 
+export const untt = (state: string | TranslateState) => {
+  if (typeof state === 'string') return state
+  else return tt(state)
+}
+
 let langEL: HTMLHtmlElement | undefined
 let langObserver: MutationObserver | undefined
 

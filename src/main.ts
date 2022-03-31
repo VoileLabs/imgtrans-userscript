@@ -6,10 +6,9 @@ import pixiv from './pixiv'
 import pixivSettings from './pixiv/settings'
 import twitter from './twitter'
 import twitterSettings from './twitter/settings'
-import init from '../wasm/pkg/wasm'
-// @ts-ignore
-import { setWasm } from '../wasm/pkg/wasm'
-// @ts-ignore
+// @ts-expect-error doesn't need to provide a type
+import init, { setWasm } from '../wasm/pkg/wasm'
+// @ts-expect-error doesn't need to provide a type
 import wasmJsModule from 'wasmJsModule'
 import { useThrottleFn } from '@vueuse/shared'
 

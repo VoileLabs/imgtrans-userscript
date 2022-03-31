@@ -1,10 +1,10 @@
 import type { ComputedRef, Ref } from 'vue'
-import { nextTick } from 'vue'
 import {
   computed,
   createApp,
   defineComponent,
   h,
+  nextTick,
   reactive,
   ref,
   shallowReactive,
@@ -14,17 +14,32 @@ import {
   withModifiers,
 } from 'vue'
 import type { Translator } from '../main'
-import { t, tt } from '../i18n'
+import { t, tt, untt } from '../i18n'
 import type { TranslateOptionsOverwrite } from '../utils/core'
-import { resizeToSubmit } from '../utils/core'
-import { blobToImageData, getStatusText, pullTransStatusUntilFinish, submitTranslate } from '../utils/core'
+import {
+  blobToImageData,
+  downloadResultBlob,
+  getStatusText,
+  pullTransStatusUntilFinish,
+  resizeToSubmit,
+  submitTranslate,
+} from '../utils/core'
 import IconCarbonTranslate from '~icons/carbon/translate'
 import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
 import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { formatProgress, phash } from '../utils'
-import { detectResOptions, detectResOptionsMap, renderTextDirOptions, renderTextDirOptionsMap } from '../settings'
-import { detectionResolution, renderTextOrientation } from '../composables'
+import {
+  detectResOptions,
+  detectResOptionsMap,
+  renderTextDirOptions,
+  renderTextDirOptionsMap,
+  textDetectorOptions,
+  textDetectorOptionsMap,
+  translatorOptions,
+  translatorOptionsMap,
+} from '../settings'
+import { detectionResolution, renderTextOrientation, textDetector, translator } from '../composables'
 import { useThrottleFn } from '@vueuse/shared'
 
 export default (): Translator => {
@@ -149,26 +164,15 @@ export default (): Translator => {
       })
 
       translateStatusMap[url] = computed(() => tt(t('common.client.download-image')))
-      const image = await GMP.xmlHttpRequest({
-        method: 'GET',
-        responseType: 'blob',
-        url: 'https://touhou.ai/imgtrans/result/' + id + '/final.png',
-        onprogress(e) {
-          if (e.lengthComputable) {
-            translateStatusMap[url] = computed(() =>
-              tt(
-                t('common.client.download-image-progress', {
-                  progress: formatProgress(e.loaded, e.total),
-                })
-              )
-            )
-          }
+      const image = await downloadResultBlob(id, {
+        onProgress(progress) {
+          t('common.client.download-image-progress', { progress })
         },
       }).catch((e) => {
         translateStatusMap[url] = computed(() => tt(t('common.client.download-image-error')))
         throw e
       })
-      const imageUri = URL.createObjectURL(image.response as Blob)
+      const imageUri = URL.createObjectURL(image)
 
       translatedMap[url] = imageUri
 
@@ -277,9 +281,12 @@ export default (): Translator => {
 
           const advDetectRes = ref(detectionResolution.value)
           const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
-
           const advRenderTextDir = ref(renderTextOrientation.value)
           const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
+          const advTextDetector = ref(textDetector.value)
+          const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
+          const advTranslator = ref(translator.value)
+          const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
 
           watch(currentImg, (n, o) => {
             if (n !== o) {
@@ -362,6 +369,20 @@ export default (): Translator => {
                               detectResOptionsMap,
                             ] as const,
                             [
+                              t('settings.text-detector'),
+                              advTextDetector,
+                              advTextDetectorIndex,
+                              textDetectorOptions,
+                              textDetectorOptionsMap,
+                            ] as const,
+                            [
+                              t('settings.translator'),
+                              advTranslator,
+                              advTranslatorIndex,
+                              translatorOptions,
+                              translatorOptionsMap,
+                            ] as const,
+                            [
                               t('settings.render-text-orientation'),
                               advRenderTextDir,
                               advRenderTextDirIndex,
@@ -401,7 +422,7 @@ export default (): Translator => {
                                       opt.value = opts[optIndex.value - 1]
                                     }, ['stop', 'prevent']),
                                   }),
-                                  h('div', {}, optMap[opt.value]),
+                                  h('div', {}, untt(optMap[opt.value])),
                                   h(optIndex.value >= opts.length - 1 ? 'div' : IconCarbonChevronRight, {
                                     style: {
                                       width: '1.2em',

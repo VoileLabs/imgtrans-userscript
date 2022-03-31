@@ -42,18 +42,21 @@
 
 // {{license}}
 
+/* eslint-disable no-undef */
 var GMP
 {
   // polyfill functions
   const GMPFunctionMap = {
-    setValue: GM_setValue,
-    getValue: GM_getValue,
-    deleteValue: GM_deleteValue,
-    addValueChangeListener: GM_addValueChangeListener,
-    removeValueChangeListener: GM_removeValueChangeListener,
-    getResourceUrl: GM_getResourceURL,
+    xmlHttpRequest: typeof GM_xmlhttpRequest !== 'undefined' ? GM_xmlhttpRequest : undefined,
+    setValue: typeof GM_setValue !== 'undefined' ? GM_setValue : undefined,
+    getValue: typeof GM_getValue !== 'undefined' ? GM_getValue : undefined,
+    deleteValue: typeof GM_deleteValue !== 'undefined' ? GM_deleteValue : undefined,
+    addValueChangeListener: typeof GM_addValueChangeListener !== 'undefined' ? GM_addValueChangeListener : undefined,
+    removeValueChangeListener:
+      typeof GM_removeValueChangeListener !== 'undefined' ? GM_removeValueChangeListener : undefined,
+    getResourceUrl: typeof GM_getResourceURL !== 'undefined' ? GM_getResourceURL : undefined,
   }
-  const xmlHttpRequest = GM.xmlHttpRequest.bind(GM) || GM_xmlhttpRequest
+  const xmlHttpRequest = GM.xmlHttpRequest.bind(GM) || GMPFunctionMap.xmlHttpRequest
   GMP = new Proxy(GM, {
     get(target, prop) {
       if (prop === 'xmlHttpRequest') {
@@ -80,6 +83,9 @@ var GMP
       if (prop in GMPFunctionMap && typeof GMPFunctionMap[prop] === 'function') {
         return GMPFunctionMap[prop]
       }
+      console.error(
+        `[Touhou.AI | Manga Translator] GM.${prop} isn't supported in your userscript engine and it's required by this script. This may lead to unexpected behavior.`
+      )
     },
   })
 }

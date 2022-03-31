@@ -8,7 +8,7 @@ import {
   translator,
 } from '../composables'
 import type { TranslateState } from '../i18n'
-import { t, tt } from '../i18n'
+import { t, tt, untt } from '../i18n'
 
 export const detectResOptionsMap: Record<string, string> = {
   S: '1024px',
@@ -22,10 +22,22 @@ export const renderTextDirOptionsMap: Record<string, TranslateState> = {
   horizontal: t('settings.render-text-orientation-options.horizontal'),
 }
 export const renderTextDirOptions = Object.keys(renderTextDirOptionsMap)
+export const textDetectorOptionsMap: Record<string, TranslateState | string> = {
+  auto: t('settings.text-detector-options.auto'),
+  ctd: 'CTD',
+}
+export const textDetectorOptions = Object.keys(textDetectorOptionsMap)
+export const translatorOptionsMap: Record<string, string> = {
+  youdao: 'Youdao',
+  baidu: 'Baidu',
+  google: 'Google',
+  deepl: 'DeepL',
+}
+export const translatorOptions = Object.keys(translatorOptionsMap)
 
 export function renderSettings(options?: {
   itemOrientation?: 'vertical' | 'horizontal'
-  textStyle?: Record<string, any>
+  textStyle?: Record<string, unknown>
 }) {
   const { itemOrientation = 'vertical', textStyle = {} } = options ?? {}
 
@@ -101,33 +113,12 @@ export function renderSettings(options?: {
           detectResOptionsMap,
           t('settings.detection-resolution-desc'),
         ] as const,
-        [
-          t('settings.text-detector'),
-          textDetector,
-          {
-            auto: tt(t('settings.text-detector-options.auto')),
-            ctd: 'CTD',
-          },
-          t('settings.text-detector-desc'),
-        ] as const,
-        [
-          t('settings.translator'),
-          translator,
-          {
-            youdao: 'Youdao',
-            baidu: 'Baidu',
-            google: 'Google',
-            deepl: 'DeepL',
-          },
-          t('settings.translator-desc'),
-        ] as const,
+        [t('settings.text-detector'), textDetector, textDetectorOptionsMap, t('settings.text-detector-desc')] as const,
+        [t('settings.translator'), translator, translatorOptionsMap, t('settings.translator-desc')] as const,
         [
           t('settings.render-text-orientation'),
           renderTextOrientation,
-          {
-            auto: tt(t('settings.render-text-orientation-options.auto')),
-            horizontal: tt(t('settings.render-text-orientation-options.horizontal')),
-          },
+          renderTextDirOptionsMap,
           t('settings.render-text-orientation-desc'),
         ] as const,
         [
@@ -199,7 +190,7 @@ export function renderSettings(options?: {
                     opt.value = (e.target as HTMLSelectElement).value
                   },
                 },
-                Object.entries(optMap).map(([key, value]) => h('option', { value: key }, value))
+                Object.entries(optMap).map(([key, value]) => h('option', { value: key }, untt(value)))
               ),
               desc
                 ? h(
