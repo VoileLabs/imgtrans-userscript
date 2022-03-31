@@ -453,6 +453,8 @@ export default (): Translator => {
                                 enable(currentImg.value!, {
                                   detectionResolution: advDetectRes.value,
                                   renderTextOrientation: advRenderTextDir.value,
+                                  textDetector: advTextDetector.value,
+                                  translator: advTranslator.value,
                                 })
                                 advancedMenuOpen.value = false
                               }, ['stop', 'prevent']),

@@ -26,6 +26,8 @@ export async function resizeToSubmit(blob: Blob, suffix: string): Promise<{ blob
 export interface TranslateOptionsOverwrite {
   detectionResolution?: string
   renderTextOrientation?: string
+  textDetector?: string
+  translator?: string
 }
 export async function submitTranslate(
   blob: Blob,
@@ -40,10 +42,10 @@ export async function submitTranslate(
   const formData = new FormData()
   formData.append('file', blob, 'image.' + suffix)
   formData.append('size', optionsOverwrite?.detectionResolution ?? detectionResolution.value)
-  formData.append('translator', translator.value)
+  formData.append('translator', optionsOverwrite?.translator ?? translator.value)
   formData.append('tgt_lang', targetLang.value || BCP47ToISO639(realLang.value))
   formData.append('dir', optionsOverwrite?.renderTextOrientation ?? renderTextOrientation.value)
-  formData.append('detector', textDetector.value)
+  formData.append('detector', optionsOverwrite?.textDetector ?? textDetector.value)
 
   const result = await GMP.xmlHttpRequest({
     method: 'POST',
