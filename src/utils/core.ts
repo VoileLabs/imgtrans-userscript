@@ -1,5 +1,11 @@
 import { formatProgress, formatSize, resize } from '.'
-import { detectionResolution, renderTextOrientation, targetLang, textDetector, translator } from '../composables'
+import {
+  detectionResolution,
+  renderTextOrientation,
+  targetLang,
+  textDetector,
+  translatorService,
+} from '../composables/storage'
 import type { TranslateState } from '../i18n'
 import { BCP47ToISO639, realLang, t } from '../i18n'
 
@@ -42,7 +48,7 @@ export async function submitTranslate(
   const formData = new FormData()
   formData.append('file', blob, 'image.' + suffix)
   formData.append('size', optionsOverwrite?.detectionResolution ?? detectionResolution.value)
-  formData.append('translator', optionsOverwrite?.translator ?? translator.value)
+  formData.append('translator', optionsOverwrite?.translator ?? translatorService.value)
   formData.append('tgt_lang', targetLang.value || BCP47ToISO639(realLang.value))
   formData.append('dir', optionsOverwrite?.renderTextOrientation ?? renderTextOrientation.value)
   formData.append('detector', optionsOverwrite?.textDetector ?? textDetector.value)

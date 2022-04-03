@@ -2,10 +2,10 @@ import { useThrottleFn } from '@vueuse/shared'
 import type { App } from 'vue'
 import { createApp, defineComponent, h, onUnmounted } from 'vue'
 import { t, tt } from '../i18n'
-import type { SettingsInjector } from '../main'
+import type { SettingsInjector, SettingsInjectorInstance } from '../main'
 import { renderSettings } from '../settings'
 
-export default (): SettingsInjector => {
+function mount(): SettingsInjectorInstance {
   let settingsTab: HTMLElement | undefined
   let textApp: App | undefined
   const checkTab = () => {
@@ -162,3 +162,13 @@ export default (): SettingsInjector => {
     },
   }
 }
+
+const settingsInjector: SettingsInjector = {
+  match(url) {
+    // https://twitter.com/settings/<tab>
+    return url.hostname.endsWith('twitter.com') && url.pathname.match(/\/settings\//)
+  },
+  mount,
+}
+
+export default settingsInjector

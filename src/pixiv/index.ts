@@ -1,5 +1,5 @@
 import { computed, createApp, defineComponent, h, nextTick, ref, withModifiers } from 'vue'
-import type { Translator } from '../main'
+import type { Translator, TranslatorInstance } from '../main'
 import type { TranslateOptionsOverwrite } from '../utils/core'
 import {
   blobToImageData,
@@ -16,7 +16,7 @@ import IconCarbonReset from '~icons/carbon/reset'
 import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
 import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { formatProgress, phash } from '../utils'
-import { detectionResolution, renderTextOrientation, textDetector, translator } from '../composables'
+import { detectionResolution, renderTextOrientation, textDetector, translatorService } from '../composables/storage'
 import {
   detectResOptions,
   detectResOptionsMap,
@@ -29,7 +29,7 @@ import {
 } from '../settings'
 import { useThrottleFn } from '@vueuse/shared'
 
-export default (): Translator => {
+function mount(): TranslatorInstance {
   interface Instance {
     imageNode: HTMLImageElement
     stop: () => void
@@ -118,7 +118,7 @@ export default (): Translator => {
           const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
           const advTextDetector = ref(textDetector.value)
           const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
-          const advTranslator = ref(translator.value)
+          const advTranslator = ref(translatorService.value)
           const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
 
           return () =>
@@ -622,3 +622,13 @@ export default (): Translator => {
     },
   }
 }
+
+const translator: Translator = {
+  match(url) {
+    // https://www.pixiv.net/(en/)artworks/<id>
+    return url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/artworks\//)
+  },
+  mount,
+}
+
+export default translator

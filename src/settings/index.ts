@@ -5,8 +5,8 @@ import {
   scriptLang,
   targetLang,
   textDetector,
-  translator,
-} from '../composables'
+  translatorService,
+} from '../composables/storage'
 import type { TranslateState } from '../i18n'
 import { t, tt, untt } from '../i18n'
 
@@ -114,7 +114,7 @@ export function renderSettings(options?: {
           t('settings.detection-resolution-desc'),
         ] as const,
         [t('settings.text-detector'), textDetector, textDetectorOptionsMap, t('settings.text-detector-desc')] as const,
-        [t('settings.translator'), translator, translatorOptionsMap, t('settings.translator-desc')] as const,
+        [t('settings.translator'), translatorService, translatorOptionsMap, t('settings.translator-desc')] as const,
         [
           t('settings.render-text-orientation'),
           renderTextOrientation,
@@ -215,7 +215,7 @@ export function renderSettings(options?: {
             onClick: withModifiers(() => {
               detectionResolution.value = null
               textDetector.value = null
-              translator.value = null
+              translatorService.value = null
               renderTextOrientation.value = null
               targetLang.value = null
               scriptLang.value = null

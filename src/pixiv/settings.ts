@@ -1,9 +1,9 @@
 import { createApp, defineComponent, h } from 'vue'
 import { t, tt } from '../i18n'
-import type { SettingsInjector } from '../main'
+import type { SettingsInjector, SettingsInjectorInstance } from '../main'
 import { renderSettings } from '../settings'
 
-export default (): SettingsInjector => {
+function mount(): SettingsInjectorInstance {
   const wrapper = document.getElementById('wrapper')
   if (!wrapper) return {}
 
@@ -71,3 +71,13 @@ export default (): SettingsInjector => {
     },
   }
 }
+
+const settingsInjector: SettingsInjector = {
+  match(url) {
+    // https://www.pixiv.net/setting_user.php
+    return url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/setting_user\.php/)
+  },
+  mount,
+}
+
+export default settingsInjector

@@ -24,24 +24,24 @@
     "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
     "@vue/compiler-sfc": "^3.2.31",
-    "esbuild": "^0.14.29",
+    "esbuild": "^0.14.30",
     "eslint": "^8.12.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
     "fast-glob": "^3.2.11",
-    "happy-dom": "^2.53.0",
+    "happy-dom": "^2.55.0",
     "prettier": "2.6.1",
+    "rimraf": "^3.0.2",
     "rollup": "^2.70.1",
-    "rollup-plugin-empty-dir": "^1.0.5",
     "rollup-plugin-esbuild": "^4.8.2",
     "typescript": "^4.6.3",
     "unplugin-icons": "^0.14.1",
-    "vitest": "^0.8.1"
+    "vitest": "^0.8.2"
   },
   "dependencies": {
-    "@vueuse/core": "^8.2.2",
-    "@vueuse/shared": "^8.2.2",
+    "@vueuse/core": "^8.2.3",
+    "@vueuse/shared": "^8.2.3",
     "vue": "^3.2.31"
   }
 }

@@ -2,32 +2,37 @@ import type { EffectScope } from 'vue'
 import { effectScope, onScopeDispose } from 'vue'
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
-import pixiv from './pixiv'
-import pixivSettings from './pixiv/settings'
-import twitter from './twitter'
-import twitterSettings from './twitter/settings'
 // @ts-expect-error doesn't need to provide a type
 import init, { setWasm } from '../wasm/pkg/wasm'
 // @ts-expect-error doesn't need to provide a type
 import wasmJsModule from 'wasmJsModule'
 import { useThrottleFn } from '@vueuse/shared'
+import { storageReady } from './composables/storage'
 
+export interface TranslatorInstance {
+  canKeep?: (url: string) => unknown
+  stop?: () => void
+}
 export interface Translator {
-  canKeep?: (url: string) => boolean | null | undefined
-  stop?: () => void
+  match: (url: URL) => unknown
+  mount: () => TranslatorInstance
 }
 
+export interface SettingsInjectorInstance {
+  canKeep?: (url: string) => unknown
+  stop?: () => void
+}
 export interface SettingsInjector {
-  canKeep?: (url: string) => boolean | null | undefined
-  stop?: () => void
+  match: (url: URL) => unknown
+  mount: () => SettingsInjectorInstance
 }
 
-interface ScopedInstance<T extends Translator | SettingsInjector> {
+interface ScopedInstance<T extends TranslatorInstance | SettingsInjectorInstance> {
   scope: EffectScope
   i: T
 }
 
-function createScopedInstance<T extends Translator | SettingsInjector>(cb: () => T): ScopedInstance<T> {
+function createScopedInstance<T extends TranslatorInstance | SettingsInjectorInstance>(cb: () => T): ScopedInstance<T> {
   const scope = effectScope()
   const i = scope.run(cb)!
   scope.run(() => {
@@ -74,62 +79,60 @@ Promise.allSettled =
     ))
 
 let currentURL: string | undefined
-let translator: ScopedInstance<Translator> | undefined
-let settingsInjector: ScopedInstance<SettingsInjector> | undefined
-const onUpdate = () => {
-  if (currentURL !== location.href) {
-    currentURL = location.href
+let translator: ScopedInstance<TranslatorInstance> | undefined
+let settingsInjector: ScopedInstance<SettingsInjectorInstance> | undefined
 
-    // there is a navigation in the page
+export async function start(translators: Translator[], settingsInjectors: SettingsInjector[]) {
+  await storageReady
 
-    /* ensure css is loaded */
-    checkCSS()
-
-    /* update i18n element */
-    changeLangEl(document.documentElement as HTMLHtmlElement)
-
-    /* update translator */
-    // only if the translator needs to be updated
-    if (!translator?.i.canKeep?.(currentURL)) {
-      // unmount previous translator
-      translator?.scope.stop()
-      translator = undefined
-
-      // check if the page is a image page
-      const url = new URL(location.href)
-      // https://www.pixiv.net/(en/)artworks/<id>
-      if (url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/artworks\//)) {
-        translator = createScopedInstance(pixiv)
-      }
-      // https://twitter.com/<user>/status/<id>
-      else if (url.hostname.endsWith('twitter.com') && url.pathname.match(/\/status\//)) {
-        translator = createScopedInstance(twitter)
-      }
-    }
-
-    /* update settings page */
-    if (!settingsInjector?.i.canKeep?.(currentURL)) {
-      // unmount previous settings injector
-      settingsInjector?.scope.stop()
-      settingsInjector = undefined
-
-      // check if the page is a settings page
-      const url = new URL(location.href)
-      // https://www.pixiv.net/setting_user.php
-      if (url.hostname.endsWith('pixiv.net') && url.pathname.match(/\/setting_user\.php/)) {
-        settingsInjector = createScopedInstance(pixivSettings)
-      }
-      // https://twitter.com/settings/<tab>
-      if (url.hostname.endsWith('twitter.com') && url.pathname.match(/\/settings\//)) {
-        settingsInjector = createScopedInstance(twitterSettings)
-      }
-    }
-  }
-}
-Promise.allSettled([initWasm()]).then((results) => {
+  const results = await Promise.allSettled([initWasm()])
   for (const result of results) {
     if (result.status === 'rejected') console.warn(result.reason)
   }
+
+  function onUpdate() {
+    if (currentURL !== location.href) {
+      currentURL = location.href
+
+      // there is a navigation in the page
+
+      /* ensure css is loaded */
+      checkCSS()
+
+      /* update i18n element */
+      changeLangEl(document.documentElement as HTMLHtmlElement)
+
+      /* update translator */
+      // only if the translator needs to be updated
+      if (!translator?.i.canKeep?.(currentURL)) {
+        // unmount previous translator
+        translator?.scope.stop()
+        translator = undefined
+
+        // check if the page is a image page
+        const url = new URL(location.href)
+
+        // find the first translator that matches the url
+        const matched = translators.find((t) => t.match(url))
+        if (matched) translator = createScopedInstance(matched.mount)
+      }
+
+      /* update settings page */
+      if (!settingsInjector?.i.canKeep?.(currentURL)) {
+        // unmount previous settings injector
+        settingsInjector?.scope.stop()
+        settingsInjector = undefined
+
+        // check if the page is a settings page
+        const url = new URL(location.href)
+
+        // find the first settings injector that matches the url
+        const matched = settingsInjectors.find((t) => t.match(url))
+        if (matched) settingsInjector = createScopedInstance(matched.mount)
+      }
+    }
+  }
+
   // @ts-expect-error Tampermonkey specific
   if (window.onurlchange === null) {
     window.addEventListener('urlchange', onUpdate)
@@ -138,4 +141,4 @@ Promise.allSettled([initWasm()]).then((results) => {
     installObserver.observe(document.body, { childList: true, subtree: true })
   }
   onUpdate()
-})
+}

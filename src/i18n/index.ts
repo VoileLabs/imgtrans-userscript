@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { scriptLang } from '../composables'
+import { scriptLang } from '../composables/storage'
 
 import zhCN from './zh-CN.yml'
 import enUS from './en-US.yml'

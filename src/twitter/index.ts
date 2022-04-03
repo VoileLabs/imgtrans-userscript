@@ -13,7 +13,7 @@ import {
   watchEffect,
   withModifiers,
 } from 'vue'
-import type { Translator } from '../main'
+import type { Translator, TranslatorInstance } from '../main'
 import { t, tt, untt } from '../i18n'
 import type { TranslateOptionsOverwrite } from '../utils/core'
 import {
@@ -39,10 +39,10 @@ import {
   translatorOptions,
   translatorOptionsMap,
 } from '../settings'
-import { detectionResolution, renderTextOrientation, textDetector, translator } from '../composables'
+import { detectionResolution, renderTextOrientation, textDetector, translatorService } from '../composables/storage'
 import { useThrottleFn } from '@vueuse/shared'
 
-export default (): Translator => {
+function mount(): TranslatorInstance {
   const statusId = location.pathname.match(/\/status\/(\d+)/)?.[1]
 
   const translatedMap: Record<string, string | undefined> = reactive({})
@@ -285,7 +285,7 @@ export default (): Translator => {
           const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
           const advTextDetector = ref(textDetector.value)
           const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
-          const advTranslator = ref(translator.value)
+          const advTranslator = ref(translatorService.value)
           const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
 
           watch(currentImg, (n, o) => {
@@ -562,7 +562,7 @@ export default (): Translator => {
   }
 
   return {
-    canKeep(url: string) {
+    canKeep(url) {
       const urlStatusId = url.match(/\/status\/(\d+)/)?.[1]
       return urlStatusId === statusId
     },
@@ -572,3 +572,13 @@ export default (): Translator => {
     },
   }
 }
+
+const translator: Translator = {
+  // https://twitter.com/<user>/status/<id>
+  match(url) {
+    return url.hostname.endsWith('twitter.com') && url.pathname.match(/\/status\//)
+  },
+  mount,
+}
+
+export default translator
