@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { sync as fgs } from 'fast-glob'
+import MagicString from 'magic-string'
 import { defineConfig } from 'rollup'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
@@ -23,17 +24,15 @@ function gennerateConfig(input, output, banner) {
         .replace(/{{versionVueuseShared}}/g, dependencies['@vueuse/shared'].replace(/^\^/, ''))
         .replace(/{{versionVueuseCore}}/g, dependencies['@vueuse/core'].replace(/^\^/, ''))
         .replace(/{{wasmCommit}}/g, '777037c9b1f6b734d21aa4b074d79aa73e6ba352')
-        .replace(
-          '// {{license}}',
+        .replace('// {{license}}',
           fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
-            .map((file) => '/**\n' + fs.readFileSync(file, 'utf8').trim() + '\n*/')
-            .join('\n\n')
-        ),
+            .map(file => `/**\n${fs.readFileSync(file, 'utf8').trim()}\n*/`)
+            .join('\n\n')),
       globals: {
-        vue: 'Vue',
+        'vue': 'Vue',
         '@vueuse/shared': 'VueUse',
         '@vueuse/core': 'VueUse',
-        wasmJsModule: 'wasmJsModule',
+        'wasmJsModule': 'wasmJsModule',
       },
     },
     external: ['vue', '@vueuse/shared', '@vueuse/core', 'wasmJsModule'],
@@ -49,8 +48,11 @@ function gennerateConfig(input, output, banner) {
         name: 'patch',
         transform(code, id) {
           if (id === path.resolve(__dirname, './wasm/pkg/wasm.js')) {
+            const s = new MagicString(code)
+            s.append('\nexport function setWasm(w){wasm=w;}\n')
             return {
-              code: code + '\nexport function setWasm(w){wasm=w;}\n',
+              code: s.toString(),
+              map: s.generateMap({ hires: true }),
             }
           }
         },

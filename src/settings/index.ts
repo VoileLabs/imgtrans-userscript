@@ -32,6 +32,7 @@ export const translatorOptionsMap: Record<string, string> = {
   baidu: 'Baidu',
   google: 'Google',
   deepl: 'DeepL',
+  papago: 'Papago',
 }
 export const translatorOptions = Object.keys(translatorOptionsMap)
 
@@ -41,189 +42,156 @@ export function renderSettings(options?: {
 }) {
   const { itemOrientation = 'vertical', textStyle = {} } = options ?? {}
 
-  return h(
-    'div',
-    {
+  return h('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    },
+  }, [
+    // Meta
+    h('div', {}, [
+      `"${EDITION}" edition, v${VERSION}`,
+    ]),
+    // Sponsor
+    h('div', {
       style: {
         display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        gap: '4px',
       },
-    },
-    [
-      // Sponsor
-      h(
-        'div',
-        {
-          style: {
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'nowrap',
-            gap: '4px',
-          },
+    }, [
+      tt(t('sponsor.text')),
+      h('a', {
+        href: 'https://ko-fi.com/voilelabs',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        style: {
+          color: '#2563EB',
+          textDecoration: 'underline',
         },
-        [
-          tt(t('sponsor.text')),
-          h(
-            'a',
-            {
-              href: 'https://ko-fi.com/voilelabs',
-              target: '_blank',
-              rel: 'noopener noreferrer',
+      }, 'ko-fi'),
+      h('a', {
+        href: 'https://patreon.com/voilelabs',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        style: {
+          color: '#2563EB',
+          textDecoration: 'underline',
+        },
+      }, 'Patreon'),
+      h('a', {
+        href: 'https://afdian.net/@voilelabs',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        style: {
+          color: '#2563EB',
+          textDecoration: 'underline',
+        },
+      }, '爱发电'),
+    ]),
+    // Settings
+    ...[
+      [t('settings.detection-resolution'),
+        detectionResolution, detectResOptionsMap,
+        t('settings.detection-resolution-desc'),
+      ] as const,
+      [t('settings.text-detector'),
+        textDetector, textDetectorOptionsMap,
+        t('settings.text-detector-desc'),
+      ] as const,
+      [t('settings.translator'),
+        translatorService, translatorOptionsMap,
+        t('settings.translator-desc'),
+      ] as const,
+      [t('settings.render-text-orientation'),
+        renderTextOrientation, renderTextDirOptionsMap,
+        t('settings.render-text-orientation-desc'),
+      ] as const,
+      [t('settings.target-language'),
+        targetLang, {
+          '': tt(t('settings.target-language-options.auto')),
+          'CHS': '简体中文',
+          'CHT': '繁體中文',
+          'JPN': '日本語',
+          'ENG': 'English',
+          'KOR': '한국어',
+          'VIN': 'Tiếng Việt',
+          'CSY': 'čeština',
+          'NLD': 'Nederlands',
+          'FRA': 'français',
+          'DEU': 'Deutsch',
+          'HUN': 'magyar nyelv',
+          'ITA': 'italiano',
+          'PLK': 'polski',
+          'PTB': 'português',
+          'ROM': 'limba română',
+          'RUS': 'русский язык',
+          'ESP': 'español',
+          'TRK': 'Türk dili',
+        },
+        t('settings.target-language-desc'),
+      ] as const,
+      [
+        t('settings.script-language'),
+        scriptLang, {
+          '': tt(t('settings.script-language-options.auto')),
+          'zh-CN': '简体中文',
+          'en-US': 'English',
+        },
+        t('settings.script-language-desc'),
+      ] as const,
+    ].map(([title, opt, optMap, desc]) =>
+      h('div', {
+        style: {
+          ...(itemOrientation === 'horizontal'
+            ? {
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+              }
+            : {}),
+        },
+      }, [
+        h('div', {
+          style: {
+            ...textStyle,
+          },
+        }, tt(title)),
+        h('div', {}, [
+          h('select', {
+            value: opt.value,
+            onChange(e: Event) {
+              opt.value = (e.target as HTMLSelectElement).value
+            },
+          }, Object.entries(optMap)
+            .map(([key, value]) =>
+              h('option', {
+                value: key,
+              }, untt(value)))),
+          desc
+            ? h('div', {
               style: {
-                color: '#2563EB',
-                textDecoration: 'underline',
+                fontSize: '13px',
               },
-            },
-            'ko-fi'
-          ),
-          h(
-            'a',
-            {
-              href: 'https://patreon.com/voilelabs',
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              style: {
-                color: '#2563EB',
-                textDecoration: 'underline',
-              },
-            },
-            'Patreon'
-          ),
-          h(
-            'a',
-            {
-              href: 'https://afdian.net/@voilelabs',
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              style: {
-                color: '#2563EB',
-                textDecoration: 'underline',
-              },
-            },
-            '爱发电'
-          ),
-        ]
-      ),
-      // Settings
-      ...[
-        [
-          t('settings.detection-resolution'),
-          detectionResolution,
-          detectResOptionsMap,
-          t('settings.detection-resolution-desc'),
-        ] as const,
-        [t('settings.text-detector'), textDetector, textDetectorOptionsMap, t('settings.text-detector-desc')] as const,
-        [t('settings.translator'), translatorService, translatorOptionsMap, t('settings.translator-desc')] as const,
-        [
-          t('settings.render-text-orientation'),
-          renderTextOrientation,
-          renderTextDirOptionsMap,
-          t('settings.render-text-orientation-desc'),
-        ] as const,
-        [
-          t('settings.target-language'),
-          targetLang,
-          {
-            '': tt(t('settings.target-language-options.auto')),
-            CHS: '简体中文',
-            CHT: '繁體中文',
-            JPN: '日本語',
-            ENG: 'English',
-            KOR: '한국어',
-            VIN: 'Tiếng Việt',
-            CSY: 'čeština',
-            NLD: 'Nederlands',
-            FRA: 'français',
-            DEU: 'Deutsch',
-            HUN: 'magyar nyelv',
-            ITA: 'italiano',
-            PLK: 'polski',
-            PTB: 'português',
-            ROM: 'limba română',
-            RUS: 'русский язык',
-            ESP: 'español',
-            TRK: 'Türk dili',
-          },
-          t('settings.target-language-desc'),
-        ] as const,
-        [
-          t('settings.script-language'),
-          scriptLang,
-          {
-            '': tt(t('settings.script-language-options.auto')),
-            'zh-CN': '简体中文',
-            'en-US': 'English',
-          },
-          t('settings.script-language-desc'),
-        ] as const,
-      ].map(([title, opt, optMap, desc]) =>
-        h(
-          'div',
-          {
-            style: {
-              ...(itemOrientation === 'horizontal'
-                ? {
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }
-                : {}),
-            },
-          },
-          [
-            h(
-              'div',
-              {
-                style: {
-                  ...textStyle,
-                },
-              },
-              tt(title)
-            ),
-            h('div', {}, [
-              h(
-                'select',
-                {
-                  value: opt.value,
-                  onChange(e: Event) {
-                    opt.value = (e.target as HTMLSelectElement).value
-                  },
-                },
-                Object.entries(optMap).map(([key, value]) => h('option', { value: key }, untt(value)))
-              ),
-              desc
-                ? h(
-                    'div',
-                    {
-                      style: {
-                        fontSize: '13px',
-                      },
-                    },
-                    tt(desc)
-                  )
-                : undefined,
-            ]),
-          ]
-        )
-      ),
-      // Reset
-      h('div', [
-        h(
-          'button',
-          {
-            onClick: withModifiers(() => {
-              detectionResolution.value = null
-              textDetector.value = null
-              translatorService.value = null
-              renderTextOrientation.value = null
-              targetLang.value = null
-              scriptLang.value = null
-            }, ['stop', 'prevent']),
-          },
-          tt(t('settings.reset'))
-        ),
+            }, tt(desc))
+            : undefined,
+        ]),
       ]),
-    ]
-  )
+    ),
+    // Reset
+    h('div', [
+      h('button', {
+        onClick: withModifiers(() => {
+          detectionResolution.value = null
+          textDetector.value = null
+          translatorService.value = null
+          renderTextOrientation.value = null
+          targetLang.value = null
+          scriptLang.value = null
+        }, ['stop', 'prevent']),
+      }, tt(t('settings.reset'))),
+    ]),
+  ])
 }

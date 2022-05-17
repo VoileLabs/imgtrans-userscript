@@ -1,12 +1,12 @@
 import type { EffectScope } from 'vue'
 import { effectScope, onScopeDispose } from 'vue'
-import { checkCSS } from './style'
-import { changeLangEl } from './i18n'
-// @ts-expect-error doesn't need to provide a type
-import init, { setWasm } from '../wasm/pkg/wasm'
 // @ts-expect-error doesn't need to provide a type
 import wasmJsModule from 'wasmJsModule'
 import { useThrottleFn } from '@vueuse/shared'
+// @ts-expect-error doesn't need to provide a type
+import init, { setWasm } from '../wasm/pkg/wasm'
+import { checkCSS } from './style'
+import { changeLangEl } from './i18n'
 import { storageReady } from './composables/storage'
 
 export interface TranslatorInstance {
@@ -49,34 +49,34 @@ async function initWasm() {
     if (/^data:.+;base64,/.test(uri)) {
       const data = window.atob(uri.split(';base64,', 2)[1])
       const buffer = new Uint8Array(data.length)
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; i < data.length; i++)
         buffer[i] = data.charCodeAt(i)
-      }
+
       await init(buffer)
-    } else {
+    }
+    else {
       await init(uri)
     }
-  } catch (e) {
+  }
+  catch (e) {
     setWasm(wasmJsModule)
   }
 }
 
-Promise.allSettled =
-  Promise.allSettled ||
-  ((promises: Promise<never>[]) =>
-    Promise.all(
-      promises.map((p) =>
-        p
-          .then((value) => ({
+Promise.allSettled
+  = Promise.allSettled
+    || ((promises: Promise<never>[]) =>
+      Promise.all(
+        promises.map(p =>
+          p.then(value => ({
             status: 'fulfilled',
             value,
-          }))
-          .catch((reason) => ({
+          })).catch(reason => ({
             status: 'rejected',
             reason,
-          }))
-      )
-    ))
+          })),
+        ),
+      ))
 
 let currentURL: string | undefined
 let translator: ScopedInstance<TranslatorInstance> | undefined
@@ -87,7 +87,8 @@ export async function start(translators: Translator[], settingsInjectors: Settin
 
   const results = await Promise.allSettled([initWasm()])
   for (const result of results) {
-    if (result.status === 'rejected') console.warn(result.reason)
+    if (result.status === 'rejected')
+      console.warn(result.reason)
   }
 
   function onUpdate() {
@@ -113,8 +114,9 @@ export async function start(translators: Translator[], settingsInjectors: Settin
         const url = new URL(location.href)
 
         // find the first translator that matches the url
-        const matched = translators.find((t) => t.match(url))
-        if (matched) translator = createScopedInstance(matched.mount)
+        const matched = translators.find(t => t.match(url))
+        if (matched)
+          translator = createScopedInstance(matched.mount)
       }
 
       /* update settings page */
@@ -127,8 +129,9 @@ export async function start(translators: Translator[], settingsInjectors: Settin
         const url = new URL(location.href)
 
         // find the first settings injector that matches the url
-        const matched = settingsInjectors.find((t) => t.match(url))
-        if (matched) settingsInjector = createScopedInstance(matched.mount)
+        const matched = settingsInjectors.find(t => t.match(url))
+        if (matched)
+          settingsInjector = createScopedInstance(matched.mount)
       }
     }
   }
@@ -136,7 +139,8 @@ export async function start(translators: Translator[], settingsInjectors: Settin
   // @ts-expect-error Tampermonkey specific
   if (window.onurlchange === null) {
     window.addEventListener('urlchange', onUpdate)
-  } else {
+  }
+  else {
     const installObserver = new MutationObserver(useThrottleFn(onUpdate, 200, true, false))
     installObserver.observe(document.body, { childList: true, subtree: true })
   }

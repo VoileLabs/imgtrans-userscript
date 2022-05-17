@@ -13,6 +13,7 @@ import {
   watchEffect,
   withModifiers,
 } from 'vue'
+import { useThrottleFn } from '@vueuse/shared'
 import type { Translator, TranslatorInstance } from '../main'
 import { t, tt, untt } from '../i18n'
 import type { TranslateOptionsOverwrite } from '../utils/core'
@@ -24,10 +25,6 @@ import {
   resizeToSubmit,
   submitTranslate,
 } from '../utils/core'
-import IconCarbonTranslate from '~icons/carbon/translate'
-import IconCarbonReset from '~icons/carbon/reset'
-import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
-import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { formatProgress, phash } from '../utils'
 import {
   detectResOptions,
@@ -39,8 +36,16 @@ import {
   translatorOptions,
   translatorOptionsMap,
 } from '../settings'
-import { detectionResolution, renderTextOrientation, textDetector, translatorService } from '../composables/storage'
-import { useThrottleFn } from '@vueuse/shared'
+import {
+  detectionResolution,
+  renderTextOrientation,
+  textDetector,
+  translatorService,
+} from '../composables/storage'
+import IconCarbonTranslate from '~icons/carbon/translate'
+import IconCarbonReset from '~icons/carbon/reset'
+import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
+import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 
 function mount(): TranslatorInstance {
   const statusId = location.pathname.match(/\/status\/(\d+)/)?.[1]
@@ -64,39 +69,48 @@ function mount(): TranslatorInstance {
   const createDialogInstance = (): DialogInstance => {
     const active = ref(0)
     const updateRef = ref()
-    const buttonParent = dialog!.querySelector('[aria-labelledby="modal-header"][role="dialog"]')!.firstChild!
-      .firstChild as HTMLElement
+    const buttonParent = dialog!.querySelector('[aria-labelledby="modal-header"][role="dialog"]')!
+      .firstChild!.firstChild as HTMLElement
 
     const images = computed(() => {
+      // eslint-disable-next-line no-unused-expressions
       updateRef.value
-      return Array.from((buttonParent.firstChild! as HTMLElement).querySelectorAll('img'))
+      return [].slice.call((buttonParent.firstChild! as HTMLElement).querySelectorAll('img')) as HTMLImageElement[]
     })
     const currentImg = computed(() => {
       const img = images.value[active.value]
-      if (!img) return undefined
+      if (!img)
+        return undefined
       return img.getAttribute('data-transurl') || img.src
     })
-    const stopImageWatch = watch([images, translateEnabledMap, translatedMap], () => {
-      for (const img of images.value) {
-        const div = img.previousSibling as HTMLElement
-        if (img.hasAttribute('data-transurl')) {
-          const transurl = img.getAttribute('data-transurl')!
-          if (!translateEnabledMap[transurl]) {
-            if (div) div.style.backgroundImage = `url("${transurl}")`
-            img.src = transurl
-            img.removeAttribute('data-transurl')
+    const stopImageWatch = watch(
+      [images, translateEnabledMap, translatedMap],
+      () => {
+        for (const img of images.value) {
+          const div = img.previousSibling as HTMLElement
+          if (img.hasAttribute('data-transurl')) {
+            const transurl = img.getAttribute('data-transurl')!
+            if (!translateEnabledMap[transurl]) {
+              if (div)
+                div.style.backgroundImage = `url("${transurl}")`
+              img.src = transurl
+              img.removeAttribute('data-transurl')
+            }
           }
-        } else if (translateEnabledMap[img.src] && translatedMap[img.src]) {
-          const ori = img.src
-          img.setAttribute('data-transurl', ori)
-          img.src = translatedMap[ori]!
-          if (div) div.style.backgroundImage = `url("${translatedMap[ori]!}")`
+          else if (translateEnabledMap[img.src] && translatedMap[img.src]) {
+            const ori = img.src
+            img.setAttribute('data-transurl', ori)
+            img.src = translatedMap[ori]!
+            if (div)
+              div.style.backgroundImage = `url("${translatedMap[ori]!}")`
+          }
         }
-      }
-    })
+      },
+    )
 
     const getTranslatedImage = async (url: string, optionsOverwrite?: TranslateOptionsOverwrite): Promise<string> => {
-      if (!optionsOverwrite && translatedMap[url]) return translatedMap[url]!
+      if (!optionsOverwrite && translatedMap[url])
+        return translatedMap[url]!
 
       translateStatusMap[url] = computed(() => tt(t('common.source.download-image')))
       if (!originalImageMap[url]) {
@@ -110,12 +124,9 @@ function mount(): TranslatorInstance {
           onprogress(e) {
             if (e.lengthComputable) {
               translateStatusMap[url] = computed(() =>
-                tt(
-                  t('common.source.download-image-progress', {
-                    progress: formatProgress(e.loaded, e.total),
-                  })
-                )
-              )
+                tt(t('common.source.download-image-progress', {
+                  progress: formatProgress(e.loaded, e.total),
+                })))
             }
           },
         }).catch((e) => {
@@ -136,7 +147,8 @@ function mount(): TranslatorInstance {
       try {
         const imageData = await blobToImageData(resizedImage)
         console.log('phash', phash(imageData))
-      } catch (e) {
+      }
+      catch (e) {
         console.warn(e)
       }
 
@@ -149,7 +161,7 @@ function mount(): TranslatorInstance {
             translateStatusMap[url] = computed(() => tt(t('common.client.submit-progress', { progress })))
           },
         },
-        optionsOverwrite
+        optionsOverwrite,
       ).catch((e) => {
         translateStatusMap[url] = computed(() => tt(t('common.client.submit-error')))
         throw e
@@ -212,22 +224,26 @@ function mount(): TranslatorInstance {
     buttonParent.appendChild(container)
 
     const submitTranslateTest = () => {
-      if (!currentImg.value) return false
-      if (translateStatusMap[currentImg.value]?.value) return false
+      if (!currentImg.value)
+        return false
+      if (translateStatusMap[currentImg.value]?.value)
+        return false
       return true
     }
     container.onclick = withModifiers(() => {
       // prevent misclick
-      if (advancedMenuOpen.value) return
-      if (!submitTranslateTest()) return
-      if (translateEnabledMap[currentImg.value!]) {
+      if (advancedMenuOpen.value)
+        return
+      if (!submitTranslateTest())
+        return
+      if (translateEnabledMap[currentImg.value!])
         disable(currentImg.value!)
-      } else {
+      else
         enable(currentImg.value!)
-      }
     }, ['stop', 'prevent'])
     container.oncontextmenu = withModifiers(() => {
-      if (currentImg.value && translateEnabledMap[currentImg.value]) advancedMenuOpen.value = false
+      if (currentImg.value && translateEnabledMap[currentImg.value])
+        advancedMenuOpen.value = false
       else advancedMenuOpen.value = !advancedMenuOpen.value
     }, ['stop', 'prevent'])
 
@@ -244,11 +260,14 @@ function mount(): TranslatorInstance {
     const stopSpinnerWatch = watch(
       buttonProcessing,
       (p, o) => {
-        if (p === o) return
-        if (p && !spinnerContainer.contains(processingSpinner)) spinnerContainer.appendChild(processingSpinner)
-        else if (spinnerContainer.contains(processingSpinner)) spinnerContainer.removeChild(processingSpinner)
+        if (p === o)
+          return
+        if (p && !spinnerContainer.contains(processingSpinner))
+          spinnerContainer.appendChild(processingSpinner)
+        else if (spinnerContainer.contains(processingSpinner))
+          spinnerContainer.removeChild(processingSpinner)
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     const svg = container.querySelector('svg')!
@@ -256,229 +275,187 @@ function mount(): TranslatorInstance {
     const buttonIconContainer = document.createElement('div')
     svgParent.insertBefore(buttonIconContainer, svg)
     svgParent.removeChild(svg)
-    const buttonIconApp = createApp(
-      defineComponent({
-        setup() {
-          return () =>
-            h(buttonTranslated.value ? IconCarbonReset : IconCarbonTranslate, {
-              style: {
-                width: '20px',
-                height: '20px',
-                marginTop: '4px',
-              },
-            })
+    const buttonIconApp = createApp(() =>
+      h(buttonTranslated.value ? IconCarbonReset : IconCarbonTranslate, {
+        style: {
+          width: '20px',
+          height: '20px',
+          marginTop: '4px',
         },
-      })
+      }),
     )
     buttonIconApp.mount(buttonIconContainer)
 
     const buttonStatusContainer = document.createElement('div')
     container.insertBefore(buttonStatusContainer, container.firstChild)
-    const buttonStatusApp = createApp(
-      defineComponent({
-        setup() {
-          const borderRadius = computed(() => (advancedMenuOpen.value || buttonContent.value ? '4px' : '16px'))
+    const buttonStatusApp = createApp(defineComponent(() => {
+      const borderRadius = computed(() => advancedMenuOpen.value || buttonContent.value ? '4px' : '16px')
 
-          const advDetectRes = ref(detectionResolution.value)
-          const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
-          const advRenderTextDir = ref(renderTextOrientation.value)
-          const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
-          const advTextDetector = ref(textDetector.value)
-          const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
-          const advTranslator = ref(translatorService.value)
-          const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
+      const advDetectRes = ref(detectionResolution.value)
+      const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
+      const advRenderTextDir = ref(renderTextOrientation.value)
+      const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
+      const advTextDetector = ref(textDetector.value)
+      const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
+      const advTranslator = ref(translatorService.value)
+      const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
 
-          watch(currentImg, (n, o) => {
-            if (n !== o) {
-              advDetectRes.value = detectionResolution.value
-              advRenderTextDir.value = renderTextOrientation.value
-            }
-          })
+      watch(currentImg, (n, o) => {
+        if (n !== o) {
+          advDetectRes.value = detectionResolution.value
+          advRenderTextDir.value = renderTextOrientation.value
+        }
+      })
 
-          return () =>
-            h(
-              'div',
-              {
-                style: {
-                  marginRight: '-12px',
-                  padding: '2px',
-                  paddingLeft: '4px',
-                  paddingRight: '8px',
-                  color: '#fff',
-                  backgroundColor: backgroundColor.value,
-                  borderRadius: '4px',
-                  borderTopLeftRadius: borderRadius.value,
-                  borderBottomLeftRadius: borderRadius.value,
-                  cursor: 'default',
-                },
-              },
-              buttonContent.value
-                ? h(
-                    'div',
-                    {
-                      style: {
-                        paddingRight: '8px',
-                      },
+      return () =>
+        h('div', {
+          style: {
+            marginRight: '-12px',
+            padding: '2px',
+            paddingLeft: '4px',
+            paddingRight: '8px',
+            color: '#fff',
+            backgroundColor: backgroundColor.value,
+            borderRadius: '4px',
+            borderTopLeftRadius: borderRadius.value,
+            borderBottomLeftRadius: borderRadius.value,
+            cursor: 'default',
+          },
+        },
+        buttonContent.value
+          ? h('div', {
+            style: {
+              paddingRight: '8px',
+            },
+          }, buttonContent.value)
+          : currentImg.value && !translateEnabledMap[currentImg.value]
+            ? advancedMenuOpen.value
+              ? [
+                  h('div', {
+                    style: {
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingRight: '8px',
+                      paddingBottom: '2px',
                     },
-                    buttonContent.value
-                  )
-                : currentImg.value && !translateEnabledMap[currentImg.value]
-                ? advancedMenuOpen.value
-                  ? [
-                      h(
-                        'div',
-                        {
+                    onClick: withModifiers(() => {
+                      advancedMenuOpen.value = false
+                    }, ['stop', 'prevent']),
+                  }, [
+                    h(IconCarbonChevronRight, {
+                      style: {
+                        verticalAlign: 'middle',
+                        cursor: 'pointer',
+                      },
+                    }),
+                    h('div', {}, tt(t('settings.inline-options-title'))),
+                  ]),
+                  h('div', {
+                    style: {
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      marginLeft: '18px',
+                    },
+                  }, [
+                    [
+                      [t('settings.detection-resolution'),
+                        advDetectRes, advDetectResIndex,
+                        detectResOptions, detectResOptionsMap,
+                      ] as const,
+                      [t('settings.text-detector'),
+                        advTextDetector, advTextDetectorIndex,
+                        textDetectorOptions, textDetectorOptionsMap,
+                      ] as const,
+                      [t('settings.translator'),
+                        advTranslator, advTranslatorIndex,
+                        translatorOptions, translatorOptionsMap,
+                      ] as const,
+                      [
+                        t('settings.render-text-orientation'),
+                        advRenderTextDir, advRenderTextDirIndex,
+                        renderTextDirOptions, Object.fromEntries(Object.entries(renderTextDirOptionsMap).map(([k, v]) => [k, tt(v)])),
+                      ] as const,
+                    ].map(([title, opt, optIndex, opts, optMap]) =>
+                      h('div', {}, [
+                        h('div', {
+                          style: {
+                            fontSize: '12px',
+                          },
+                        },
+                        tt(title)),
+                        h('div', {
                           style: {
                             display: 'flex',
                             flexDirection: 'row',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            paddingRight: '8px',
-                            paddingBottom: '2px',
+                            userSelect: 'none',
                           },
-                          onClick: withModifiers(() => {
-                            advancedMenuOpen.value = false
-                          }, ['stop', 'prevent']),
-                        },
-                        [
-                          h(IconCarbonChevronRight, {
+                        }, [
+                          h(optIndex.value <= 0 ? 'div' : IconCarbonChevronLeft, {
                             style: {
-                              verticalAlign: 'middle',
+                              width: '1.2em',
                               cursor: 'pointer',
                             },
+                            onClick: withModifiers(() => {
+                              if (optIndex.value <= 0)
+                                return
+                              opt.value = opts[optIndex.value - 1]
+                            }, ['stop', 'prevent']),
                           }),
-                          h('div', {}, tt(t('settings.inline-options-title'))),
-                        ]
-                      ),
-                      h(
-                        'div',
-                        {
-                          style: {
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '4px',
-                            marginLeft: '18px',
-                          },
-                        },
-                        [
-                          [
-                            [
-                              t('settings.detection-resolution'),
-                              advDetectRes,
-                              advDetectResIndex,
-                              detectResOptions,
-                              detectResOptionsMap,
-                            ] as const,
-                            [
-                              t('settings.text-detector'),
-                              advTextDetector,
-                              advTextDetectorIndex,
-                              textDetectorOptions,
-                              textDetectorOptionsMap,
-                            ] as const,
-                            [
-                              t('settings.translator'),
-                              advTranslator,
-                              advTranslatorIndex,
-                              translatorOptions,
-                              translatorOptionsMap,
-                            ] as const,
-                            [
-                              t('settings.render-text-orientation'),
-                              advRenderTextDir,
-                              advRenderTextDirIndex,
-                              renderTextDirOptions,
-                              Object.fromEntries(Object.entries(renderTextDirOptionsMap).map(([k, v]) => [k, tt(v)])),
-                            ] as const,
-                          ].map(([title, opt, optIndex, opts, optMap]) =>
-                            h('div', {}, [
-                              h(
-                                'div',
-                                {
-                                  style: {
-                                    fontSize: '12px',
-                                  },
-                                },
-                                tt(title)
-                              ),
-                              h(
-                                'div',
-                                {
-                                  style: {
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    userSelect: 'none',
-                                  },
-                                },
-                                [
-                                  h(optIndex.value <= 0 ? 'div' : IconCarbonChevronLeft, {
-                                    style: {
-                                      width: '1.2em',
-                                      cursor: 'pointer',
-                                    },
-                                    onClick: withModifiers(() => {
-                                      if (optIndex.value <= 0) return
-                                      opt.value = opts[optIndex.value - 1]
-                                    }, ['stop', 'prevent']),
-                                  }),
-                                  h('div', {}, untt(optMap[opt.value])),
-                                  h(optIndex.value >= opts.length - 1 ? 'div' : IconCarbonChevronRight, {
-                                    style: {
-                                      width: '1.2em',
-                                      cursor: 'pointer',
-                                    },
-                                    onClick: withModifiers(() => {
-                                      if (optIndex.value >= opts.length - 1) return
-                                      opt.value = opts[optIndex.value + 1]
-                                    }, ['stop', 'prevent']),
-                                  }),
-                                ]
-                              ),
-                            ])
-                          ),
-                          h(
-                            'div',
-                            {
-                              style: {
-                                width: '100%',
-                                paddingBottom: '1px',
-                                border: '1px solid #A1A1AA',
-                                borderRadius: '2px',
-                                textAlign: 'center',
-                              },
-                              onClick: withModifiers(() => {
-                                if (!submitTranslateTest()) return
-                                if (translateEnabledMap[currentImg.value!]) return
-                                enable(currentImg.value!, {
-                                  detectionResolution: advDetectRes.value,
-                                  renderTextOrientation: advRenderTextDir.value,
-                                  textDetector: advTextDetector.value,
-                                  translator: advTranslator.value,
-                                })
-                                advancedMenuOpen.value = false
-                              }, ['stop', 'prevent']),
+                          h('div', {}, untt(optMap[opt.value])),
+                          h(optIndex.value >= opts.length - 1 ? 'div' : IconCarbonChevronRight, {
+                            style: {
+                              width: '1.2em',
+                              cursor: 'pointer',
                             },
-                            tt(t('common.control.translate'))
-                          ),
-                        ]
-                      ),
-                    ]
-                  : h(IconCarbonChevronLeft, {
+                            onClick: withModifiers(() => {
+                              if (optIndex.value >= opts.length - 1)
+                                return
+                              opt.value = opts[optIndex.value + 1]
+                            }, ['stop', 'prevent']),
+                          }),
+                        ]),
+                      ]),
+                    ),
+                    h('div', {
                       style: {
-                        verticalAlign: 'middle',
-                        paddingBottom: '3px',
-                        cursor: 'pointer',
+                        width: '100%',
+                        paddingBottom: '1px',
+                        border: '1px solid #A1A1AA',
+                        borderRadius: '2px',
+                        textAlign: 'center',
                       },
                       onClick: withModifiers(() => {
-                        advancedMenuOpen.value = true
+                        if (!submitTranslateTest())
+                          return
+                        if (translateEnabledMap[currentImg.value!])
+                          return
+                        enable(currentImg.value!, {
+                          detectionResolution: advDetectRes.value,
+                          renderTextOrientation: advRenderTextDir.value,
+                          textDetector: advTextDetector.value,
+                          translator: advTranslator.value,
+                        })
+                        advancedMenuOpen.value = false
                       }, ['stop', 'prevent']),
-                    })
-                : []
-            )
-        },
-      })
-    )
+                    }, tt(t('common.control.translate'))),
+                  ]),
+                ]
+              : h(IconCarbonChevronLeft, {
+                style: {
+                  verticalAlign: 'middle',
+                  paddingBottom: '3px',
+                  cursor: 'pointer',
+                },
+                onClick: withModifiers(() => {
+                  advancedMenuOpen.value = true
+                }, ['stop', 'prevent']),
+              })
+            : [])
+    }))
     buttonStatusApp.mount(buttonStatusContainer)
 
     return {
@@ -508,55 +485,48 @@ function mount(): TranslatorInstance {
 
   let dialogInstance: DialogInstance | undefined
   const rescanLayers = () => {
-    const [newDialog] = Array.from(layers!.children).filter(
-      (el) => el.querySelector('[aria-labelledby="modal-header"][role="dialog"]')?.firstChild?.firstChild?.childNodes[2]
-    ) as HTMLElement[]
+    const [newDialog] = Array.from(layers!.children)
+      .filter(el =>
+        el.querySelector('[aria-labelledby="modal-header"][role="dialog"]')
+          ?.firstChild?.firstChild?.childNodes[2]) as HTMLElement[]
     if (newDialog !== dialog || !newDialog) {
       dialogInstance?.stop()
       dialogInstance = undefined
       dialog = newDialog
-      if (!dialog) return
+      if (!dialog)
+        return
       dialogInstance = createDialogInstance()
     }
 
     const newIndex = Number(location.pathname.match(/\/status\/\d+\/photo\/(\d+)/)?.[1]) - 1
-    if (newIndex !== dialogInstance!.active.value) {
+    if (newIndex !== dialogInstance!.active.value)
       dialogInstance!.active.value = newIndex
-    }
 
     dialogInstance!.update()
   }
 
   const onLayersUpdate = () => {
     layersObserver = new MutationObserver(
-      useThrottleFn(
-        () => {
-          rescanLayers()
-        },
-        200,
-        true,
-        false
-      )
+      useThrottleFn(() => {
+        rescanLayers()
+      }, 200, true, false),
     )
     layersObserver.observe(layers!, { childList: true, subtree: true })
     rescanLayers()
   }
 
-  if (layers) onLayersUpdate()
+  if (layers) {
+    onLayersUpdate()
+  }
   else {
     initObserver = new MutationObserver(
-      useThrottleFn(
-        () => {
-          layers = document.getElementById('layers')
-          if (layers) {
-            onLayersUpdate()
-            initObserver?.disconnect()
-          }
-        },
-        200,
-        true,
-        false
-      )
+      useThrottleFn(() => {
+        layers = document.getElementById('layers')
+        if (layers) {
+          onLayersUpdate()
+          initObserver?.disconnect()
+        }
+      }, 200, true, false),
     )
     initObserver.observe(document.body, { childList: true, subtree: true })
   }

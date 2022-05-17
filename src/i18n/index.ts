@@ -10,8 +10,10 @@ const messages: Record<string, any> = {
 }
 
 function tryMatchLang(lang: string): string {
-  if (lang.startsWith('zh')) return 'zh-CN'
-  if (lang.startsWith('en')) return 'en-US'
+  if (lang.startsWith('zh'))
+    return 'zh-CN'
+  if (lang.startsWith('en'))
+    return 'en-US'
   return 'zh-CN'
 }
 
@@ -23,8 +25,9 @@ export interface TranslateState {
 export const realLang = ref(navigator.language)
 export const lang = computed(() => scriptLang.value || tryMatchLang(realLang.value))
 watch(lang, (o, n) => {
-  if (o === n) return
-  console.log('lang changed: ' + lang.value, 'real: ' + realLang.value)
+  if (o === n)
+    return
+  console.log(`lang changed: ${lang.value}`, `real: ${realLang.value}`)
 })
 
 export const t = (key: string, props: Record<string, unknown> = {}): TranslateState => {
@@ -32,17 +35,18 @@ export const t = (key: string, props: Record<string, unknown> = {}): TranslateSt
 }
 
 export const tt = ({ key, props }: TranslateState) => {
-  const msg: string =
-    key.split('.').reduce((obj, k) => obj[k], messages[lang.value]) ||
-    key.split('.').reduce((obj, k) => obj[k], messages['zh-CN'])
-  if (!msg) return key
+  const msg: string = key.split('.').reduce((obj, k) => obj[k], messages[lang.value])
+    || key.split('.').reduce((obj, k) => obj[k], messages['zh-CN'])
+  if (!msg)
+    return key
   return msg.replace(/\{([^}]+)\}/g, (_, k) => {
     return String(props[k]) ?? ''
   })
 }
 
 export const untt = (state: string | TranslateState) => {
-  if (typeof state === 'string') return state
+  if (typeof state === 'string')
+    return state
   else return tt(state)
 }
 
@@ -50,16 +54,17 @@ let langEL: HTMLHtmlElement | undefined
 let langObserver: MutationObserver | undefined
 
 export const changeLangEl = (el: HTMLHtmlElement) => {
-  if (langEL === el) return
+  if (langEL === el)
+    return
 
-  if (langObserver) langObserver.disconnect()
+  if (langObserver)
+    langObserver.disconnect()
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
         const target = mutation.target as HTMLHtmlElement
-        if (target.lang) {
+        if (target.lang)
           realLang.value = target.lang
-        }
         break
       }
     }
@@ -125,7 +130,8 @@ export function BCP47ToISO639(code: string): string {
         return 'TRK'
     }
     return 'CHS'
-  } catch (e) {
+  }
+  catch (e) {
     return 'CHS'
   }
 }

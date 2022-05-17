@@ -1,4 +1,3 @@
-import { formatProgress, formatSize, resize } from '.'
 import {
   detectionResolution,
   renderTextOrientation,
@@ -8,21 +7,22 @@ import {
 } from '../composables/storage'
 import type { TranslateState } from '../i18n'
 import { BCP47ToISO639, realLang, t } from '../i18n'
+import { formatProgress, formatSize, resize } from '.'
 
 export async function resizeToSubmit(blob: Blob, suffix: string): Promise<{ blob: Blob; suffix: string }> {
   const imageData = await blobToImageData(blob)
-  if (imageData.width <= 4000 && imageData.height <= 4000) return { blob, suffix }
+  if (imageData.width <= 4000 && imageData.height <= 4000)
+    return { blob, suffix }
   // resize to less than 4k
   const scale = Math.min(4000 / imageData.width, 4000 / imageData.height)
   const width = Math.floor(imageData.width * scale)
   const height = Math.floor(imageData.height * scale)
   const newImageData = resize(imageData, width, height)
   const newBlob = await imageDataToBlob(newImageData)
-  console.log(
-    `resized from ${imageData.width}x${imageData.height}(${formatSize(
-      blob.size
-    )},${suffix}) to ${width}x${height}(${formatSize(newBlob.size)},png)`
-  )
+  console.log('resized from '
+  + `${imageData.width}x${imageData.height}(${formatSize(blob.size)},${suffix})`
+  + ' to '
+  + `${width}x${height}(${formatSize(newBlob.size)},png)`)
   return {
     blob: newBlob,
     suffix: 'png',
@@ -41,12 +41,12 @@ export async function submitTranslate(
   listeners: {
     onProgress?: (progress: string) => void
   } = {},
-  optionsOverwrite?: TranslateOptionsOverwrite
+  optionsOverwrite?: TranslateOptionsOverwrite,
 ) {
   const { onProgress } = listeners
 
   const formData = new FormData()
-  formData.append('file', blob, 'image.' + suffix)
+  formData.append('file', blob, `image.${suffix}`)
   formData.append('size', optionsOverwrite?.detectionResolution ?? detectionResolution.value)
   formData.append('translator', optionsOverwrite?.translator ?? translatorService.value)
   formData.append('tgt_lang', targetLang.value || BCP47ToISO639(realLang.value))
@@ -97,11 +97,11 @@ export async function getTranslateStatus(id: string): Promise<Status> {
 export function getStatusText(status: Status): TranslateState {
   switch (status.state) {
     case 'pending':
-      if (status.waiting > 0) {
+      if (status.waiting > 0)
         return t('common.status.pending_pos', { pos: status.waiting })
-      } else {
+      else
         return t('common.status.pending')
-      }
+
     case 'detection':
       return t('common.status.detection')
     case 'ocr':
@@ -125,18 +125,17 @@ export function getStatusText(status: Status): TranslateState {
 
 export async function pullTransStatusUntilFinish(id: string, cb: (status: Status) => void) {
   for (;;) {
-    const timer = new Promise((resolve) => setTimeout(resolve, 500))
+    const timer = new Promise(resolve => setTimeout(resolve, 500))
 
     const status = await getTranslateStatus(id)
-    if (status.state === 'finished') {
+    if (status.state === 'finished')
       return
-    } else if (status.state === 'error') {
+    else if (status.state === 'error')
       throw t('common.status.error')
-    } else if (status.state === 'error-lang') {
+    else if (status.state === 'error-lang')
       throw t('common.status.error-lang')
-    } else {
+    else
       cb(status)
-    }
 
     await timer
   }
@@ -146,7 +145,7 @@ export async function downloadResultBlob(
   id: string,
   listeners: {
     onProgress?: (progress: string) => void
-  } = {}
+  } = {},
 ): Promise<Blob> {
   const { onProgress } = listeners
 
@@ -173,7 +172,7 @@ export function blobToImageData(blob: Blob): Promise<ImageData> {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = (err) => reject(err)
+    img.onerror = err => reject(err)
     img.src = blobUrl
   }).then((img) => {
     URL.revokeObjectURL(blobUrl)
@@ -200,11 +199,10 @@ export async function imageDataToBlob(imageData: ImageData): Promise<Blob> {
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
-      if (blob) {
+      if (blob)
         resolve(blob)
-      } else {
+      else
         reject(new Error('Canvas toBlob failed'))
-      }
     }, 'image/png')
   })
 

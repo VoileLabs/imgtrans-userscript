@@ -1,4 +1,5 @@
 import { computed, createApp, defineComponent, h, nextTick, ref, withModifiers } from 'vue'
+import { useThrottleFn } from '@vueuse/shared'
 import type { Translator, TranslatorInstance } from '../main'
 import type { TranslateOptionsOverwrite } from '../utils/core'
 import {
@@ -11,12 +12,13 @@ import {
 } from '../utils/core'
 import type { TranslateState } from '../i18n'
 import { t, tt, untt } from '../i18n'
-import IconCarbonTranslate from '~icons/carbon/translate'
-import IconCarbonReset from '~icons/carbon/reset'
-import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
-import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 import { formatProgress, phash } from '../utils'
-import { detectionResolution, renderTextOrientation, textDetector, translatorService } from '../composables/storage'
+import {
+  detectionResolution,
+  renderTextOrientation,
+  textDetector,
+  translatorService,
+} from '../composables/storage'
 import {
   detectResOptions,
   detectResOptionsMap,
@@ -27,7 +29,10 @@ import {
   translatorOptions,
   translatorOptionsMap,
 } from '../settings'
-import { useThrottleFn } from '@vueuse/shared'
+import IconCarbonTranslate from '~icons/carbon/translate'
+import IconCarbonReset from '~icons/carbon/reset'
+import IconCarbonChevronLeft from '~icons/carbon/chevron-left'
+import IconCarbonChevronRight from '~icons/carbon/chevron-right'
 
 function mount(): TranslatorInstance {
   interface Instance {
@@ -44,12 +49,11 @@ function mount(): TranslatorInstance {
   const translateEnabledMap = new Map<string, boolean>()
 
   function findImageNodes(node: HTMLElement) {
-    return Array.from(node.querySelectorAll('img') as NodeListOf<HTMLImageElement>).filter(
-      (node) =>
-        node.hasAttribute('srcset') ||
-        node.hasAttribute('data-trans') ||
-        node.parentElement?.classList.contains('sc-1pkrz0g-1')
-    )
+    return Array.from(node.querySelectorAll('img') as NodeListOf<HTMLImageElement>)
+      .filter(node =>
+        node.hasAttribute('srcset')
+          || node.hasAttribute('data-trans')
+          || node.parentElement?.classList.contains('sc-1pkrz0g-1'))
   }
 
   function rescanImages() {
@@ -57,20 +61,23 @@ function mount(): TranslatorInstance {
     const removedImages = new Set(images)
     for (const node of imageNodes) {
       removedImages.delete(node)
-      if (images.has(node)) continue
+      if (images.has(node))
+        continue
       // new image
       // console.log('new', node)
       try {
         instances.set(node, mountToNode(node))
         images.add(node)
-      } catch (e) {
+      }
+      catch (e) {
         // ignore
       }
     }
     for (const node of removedImages) {
       // removed image
       // console.log('remove', node)
-      if (!instances.has(node)) continue
+      if (!instances.has(node))
+        continue
       const instance = instances.get(node)!
       instance.stop()
       instances.delete(node)
@@ -85,7 +92,8 @@ function mount(): TranslatorInstance {
 
     // get original image
     const parent = imageNode.parentElement
-    if (!parent) throw new Error('no parent')
+    if (!parent)
+      throw new Error('no parent')
     const originalSrc = parent.getAttribute('href') || src
     const originalSrcSuffix = originalSrc.split('.').pop()!
 
@@ -105,279 +113,240 @@ function mount(): TranslatorInstance {
     parent.style.position = 'relative'
     const container = document.createElement('div')
     parent.appendChild(container)
-    const buttonApp = createApp(
-      defineComponent({
-        setup() {
-          const content = computed(() => (buttonText.value ? tt(buttonText.value) : '') + buttonHint.value)
+    const buttonApp = createApp(defineComponent(() => {
+      const content = computed(() => (buttonText.value ? tt(buttonText.value) : '') + buttonHint.value)
 
-          const advancedMenuOpen = ref(false)
+      const advancedMenuOpen = ref(false)
 
-          const advDetectRes = ref(detectionResolution.value)
-          const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
-          const advRenderTextDir = ref(renderTextOrientation.value)
-          const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
-          const advTextDetector = ref(textDetector.value)
-          const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
-          const advTranslator = ref(translatorService.value)
-          const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
+      const advDetectRes = ref(detectionResolution.value)
+      const advDetectResIndex = computed(() => detectResOptions.indexOf(advDetectRes.value))
+      const advRenderTextDir = ref(renderTextOrientation.value)
+      const advRenderTextDirIndex = computed(() => renderTextDirOptions.indexOf(advRenderTextDir.value))
+      const advTextDetector = ref(textDetector.value)
+      const advTextDetectorIndex = computed(() => textDetectorOptions.indexOf(advTextDetector.value))
+      const advTranslator = ref(translatorService.value)
+      const advTranslatorIndex = computed(() => translatorOptions.indexOf(advTranslator.value))
 
-          return () =>
-            // container
-            h(
-              'div',
-              {
-                style: {
-                  position: 'absolute',
-                  zIndex: '1',
-                  bottom: '4px',
-                  left: '8px',
-                },
+      return () =>
+      // container
+        h('div', {
+          style: {
+            position: 'absolute',
+            zIndex: '1',
+            bottom: '4px',
+            left: '8px',
+          },
+        },
+        [
+          h('div', {
+            style: {
+              position: 'relative',
+            },
+          },
+          [
+            h('div', {
+              style: {
+                fontSize: '16px',
+                lineHeight: '16px',
+                padding: '2px',
+                paddingLeft: translateMounted.value ? '2px' : '24px',
+                border: '2px solid #D1D5DB',
+                borderRadius: '6px',
+                background: '#fff',
+                cursor: 'default',
               },
-              [
-                h(
-                  'div',
-                  {
-                    style: {
-                      position: 'relative',
-                    },
-                  },
-                  [
-                    h(
-                      'div',
-                      {
-                        style: {
-                          fontSize: '16px',
-                          lineHeight: '16px',
-                          padding: '2px',
-                          paddingLeft: translateMounted.value ? '2px' : '24px',
-                          border: '2px solid #D1D5DB',
-                          borderRadius: '6px',
-                          background: '#fff',
-                          cursor: 'default',
-                        },
-                      },
-                      content.value
-                        ? content.value
-                        : !translateMounted.value
-                        ? advancedMenuOpen.value
-                          ? [
-                              h(
-                                'div',
-                                {
-                                  style: {
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    paddingBottom: '2px',
-                                  },
-                                  onClick: withModifiers(() => {
-                                    advancedMenuOpen.value = false
-                                  }, ['stop', 'prevent']),
-                                },
-                                [
-                                  h('div', {}, tt(t('settings.inline-options-title'))),
-                                  h(IconCarbonChevronLeft, {
-                                    style: {
-                                      verticalAlign: 'middle',
-                                      cursor: 'pointer',
-                                    },
-                                  }),
-                                ]
-                              ),
-                              h(
-                                'div',
-                                {
-                                  style: {
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '4px',
-                                  },
-                                },
-                                [
-                                  [
-                                    [
-                                      t('settings.detection-resolution'),
-                                      advDetectRes,
-                                      advDetectResIndex,
-                                      detectResOptions,
-                                      detectResOptionsMap,
-                                    ] as const,
-                                    [
-                                      t('settings.text-detector'),
-                                      advTextDetector,
-                                      advTextDetectorIndex,
-                                      textDetectorOptions,
-                                      textDetectorOptionsMap,
-                                    ] as const,
-                                    [
-                                      t('settings.translator'),
-                                      advTranslator,
-                                      advTranslatorIndex,
-                                      translatorOptions,
-                                      translatorOptionsMap,
-                                    ] as const,
-                                    [
-                                      t('settings.render-text-orientation'),
-                                      advRenderTextDir,
-                                      advRenderTextDirIndex,
-                                      renderTextDirOptions,
-                                      Object.fromEntries(
-                                        Object.entries(renderTextDirOptionsMap).map(([k, v]) => [k, tt(v)])
-                                      ),
-                                    ] as const,
-                                  ].map(([title, opt, optIndex, opts, optMap]) =>
-                                    h('div', {}, [
-                                      h(
-                                        'div',
-                                        {
-                                          style: {
-                                            fontSize: '12px',
-                                          },
-                                        },
-                                        tt(title)
-                                      ),
-                                      h(
-                                        'div',
-                                        {
-                                          style: {
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            userSelect: 'none',
-                                          },
-                                        },
-                                        [
-                                          h(optIndex.value <= 0 ? 'div' : IconCarbonChevronLeft, {
-                                            style: {
-                                              width: '1.2em',
-                                              cursor: 'pointer',
-                                            },
-                                            onClick: withModifiers(() => {
-                                              if (optIndex.value <= 0) return
-                                              opt.value = opts[optIndex.value - 1]
-                                            }, ['stop', 'prevent']),
-                                          }),
-                                          h('div', {}, untt(optMap[opt.value])),
-                                          h(optIndex.value >= opts.length - 1 ? 'div' : IconCarbonChevronRight, {
-                                            style: {
-                                              width: '1.2em',
-                                              cursor: 'pointer',
-                                            },
-                                            onClick: withModifiers(() => {
-                                              if (optIndex.value >= opts.length - 1) return
-                                              opt.value = opts[optIndex.value + 1]
-                                            }, ['stop', 'prevent']),
-                                          }),
-                                        ]
-                                      ),
-                                    ])
-                                  ),
-                                  h(
-                                    'div',
-                                    {
-                                      style: {
-                                        width: '100%',
-                                        paddingBottom: '1px',
-                                        border: '1px solid #A1A1AA',
-                                        borderRadius: '2px',
-                                        textAlign: 'center',
-                                      },
-                                      onClick: withModifiers(() => {
-                                        if (buttonDisabled) return
-                                        if (translateMounted.value) return
-                                        enable({
-                                          detectionResolution: advDetectRes.value,
-                                          renderTextOrientation: advRenderTextDir.value,
-                                          textDetector: advTextDetector.value,
-                                          translator: advTranslator.value,
-                                        })
-                                        advancedMenuOpen.value = false
-                                      }, ['stop', 'prevent']),
-                                    },
-                                    tt(t('common.control.translate'))
-                                  ),
-                                ]
-                              ),
-                            ]
-                          : h(IconCarbonChevronRight, {
-                              style: {
-                                cursor: 'pointer',
-                              },
-                              onClick: withModifiers(() => {
-                                advancedMenuOpen.value = true
-                              }, ['stop', 'prevent']),
-                            })
-                        : h('div', {
-                            style: {
-                              width: '1px',
-                              height: '16px',
-                            },
-                          })
-                    ),
-                    h(
-                      'div',
-                      {
-                        style: {
-                          position: 'absolute',
-                          left: '-5px',
-                          top: '-2px',
-                          background: '#fff',
-                          borderRadius: '24px',
-                        },
-                      },
-                      [
-                        // button
-                        h(buttonTranslated.value ? IconCarbonReset : IconCarbonTranslate, {
-                          style: {
-                            fontSize: '18px',
-                            lineHeight: '18px',
-                            width: '18px',
-                            height: '18px',
-                            padding: '6px',
-                            cursor: 'pointer',
-                          },
-                          onClick: withModifiers(() => {
-                            if (advancedMenuOpen.value) return
-                            toggle()
-                          }, ['stop', 'prevent']),
-                          onContextmenu: withModifiers(() => {
-                            if (translateMounted.value) advancedMenuOpen.value = false
-                            else advancedMenuOpen.value = !advancedMenuOpen.value
-                          }, ['stop', 'prevent']),
-                        }),
+            },
+            content.value
+              ? content.value
+              : !translateMounted.value
+                  ? advancedMenuOpen.value
+                    ? [
                         h('div', {
                           style: {
-                            position: 'absolute',
-                            top: '0',
-                            left: '0',
-                            right: '0',
-                            bottom: '0',
-                            border: '2px solid #D1D5DB',
-                            ...(buttonProcessing.value
-                              ? {
-                                  borderTop: '2px solid #7DD3FC',
-                                  animation: 'imgtrans-spin 1s linear infinite',
-                                }
-                              : {}),
-                            borderRadius: '24px',
-                            pointerEvents: 'none',
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            paddingBottom: '2px',
                           },
-                        }),
+                          onClick: withModifiers(() => {
+                            advancedMenuOpen.value = false
+                          }, ['stop', 'prevent']),
+                        },
+                        [
+                          h('div', {}, tt(t('settings.inline-options-title'))),
+                          h(IconCarbonChevronLeft, {
+                            style: {
+                              verticalAlign: 'middle',
+                              cursor: 'pointer',
+                            },
+                          }),
+                        ]),
+                        h('div', {
+                          style: {
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                          },
+                        }, [
+                          [
+                            [t('settings.detection-resolution'),
+                              advDetectRes, advDetectResIndex,
+                              detectResOptions, detectResOptionsMap,
+                            ] as const,
+                            [t('settings.text-detector'),
+                              advTextDetector, advTextDetectorIndex,
+                              textDetectorOptions, textDetectorOptionsMap,
+                            ] as const,
+                            [t('settings.translator'),
+                              advTranslator, advTranslatorIndex,
+                              translatorOptions, translatorOptionsMap,
+                            ] as const,
+                            [t('settings.render-text-orientation'),
+                              advRenderTextDir, advRenderTextDirIndex,
+                              renderTextDirOptions, Object.fromEntries(
+                                Object.entries(renderTextDirOptionsMap).map(([k, v]) => [k, tt(v)])),
+                            ] as const,
+                          ].map(([title, opt, optIndex, opts, optMap]) =>
+                            h('div', {}, [
+                              h('div', {
+                                style: {
+                                  fontSize: '12px',
+                                },
+                              },
+                              tt(title)),
+                              h('div', {
+                                style: {
+                                  display: 'flex',
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  userSelect: 'none',
+                                },
+                              },
+                              [
+                                h(optIndex.value <= 0 ? 'div' : IconCarbonChevronLeft, {
+                                  style: {
+                                    width: '1.2em',
+                                    cursor: 'pointer',
+                                  },
+                                  onClick: withModifiers(() => {
+                                    if (optIndex.value <= 0)
+                                      return
+                                    opt.value = opts[optIndex.value - 1]
+                                  }, ['stop', 'prevent']),
+                                }),
+                                h('div', {}, untt(optMap[opt.value])),
+                                h(optIndex.value >= opts.length - 1 ? 'div' : IconCarbonChevronRight, {
+                                  style: {
+                                    width: '1.2em',
+                                    cursor: 'pointer',
+                                  },
+                                  onClick: withModifiers(() => {
+                                    if (optIndex.value >= opts.length - 1)
+                                      return
+                                    opt.value = opts[optIndex.value + 1]
+                                  }, ['stop', 'prevent']),
+                                }),
+                              ]),
+                            ]),
+                          ),
+                          h('div', {
+                            style: {
+                              width: '100%',
+                              paddingBottom: '1px',
+                              border: '1px solid #A1A1AA',
+                              borderRadius: '2px',
+                              textAlign: 'center',
+                            },
+                            onClick: withModifiers(() => {
+                              if (buttonDisabled)
+                                return
+                              if (translateMounted.value)
+                                return
+                              enable({
+                                detectionResolution: advDetectRes.value,
+                                renderTextOrientation: advRenderTextDir.value,
+                                textDetector: advTextDetector.value,
+                                translator: advTranslator.value,
+                              })
+                              advancedMenuOpen.value = false
+                            }, ['stop', 'prevent']),
+                          }, tt(t('common.control.translate'))),
+                        ]),
                       ]
-                    ),
-                  ]
-                ),
-              ]
-            )
-        },
-      })
-    )
+                    : h(IconCarbonChevronRight, {
+                      style: {
+                        cursor: 'pointer',
+                      },
+                      onClick: withModifiers(() => {
+                        advancedMenuOpen.value = true
+                      }, ['stop', 'prevent']),
+                    })
+                  : h('div', {
+                    style: {
+                      width: '1px',
+                      height: '16px',
+                    },
+                  }),
+            ),
+            h('div', {
+              style: {
+                position: 'absolute',
+                left: '-5px',
+                top: '-2px',
+                background: '#fff',
+                borderRadius: '24px',
+              },
+            }, [
+              // button
+              h(buttonTranslated.value ? IconCarbonReset : IconCarbonTranslate, {
+                style: {
+                  fontSize: '18px',
+                  lineHeight: '18px',
+                  width: '18px',
+                  height: '18px',
+                  padding: '6px',
+                  cursor: 'pointer',
+                },
+                onClick: withModifiers(() => {
+                  if (advancedMenuOpen.value)
+                    return
+                  toggle()
+                }, ['stop', 'prevent']),
+                onContextmenu: withModifiers(() => {
+                  if (translateMounted.value)
+                    advancedMenuOpen.value = false
+                  else advancedMenuOpen.value = !advancedMenuOpen.value
+                }, ['stop', 'prevent']),
+              }),
+              h('div', {
+                style: {
+                  position: 'absolute',
+                  top: '0',
+                  left: '0',
+                  right: '0',
+                  bottom: '0',
+                  border: '2px solid #D1D5DB',
+                  ...(buttonProcessing.value
+                    ? {
+                        borderTop: '2px solid #7DD3FC',
+                        animation: 'imgtrans-spin 1s linear infinite',
+                      }
+                    : {}),
+                  borderRadius: '24px',
+                  pointerEvents: 'none',
+                },
+              }),
+            ]),
+          ]),
+        ])
+    }))
     buttonApp.mount(container)
 
     async function getTranslatedImage(optionsOverwrite?: TranslateOptionsOverwrite): Promise<string> {
-      if (!optionsOverwrite && translatedImage) return translatedImage
+      if (!optionsOverwrite && translatedImage)
+        return translatedImage
       buttonDisabled = true
       const text = buttonText.value
       buttonHint.value = ''
@@ -415,7 +384,8 @@ function mount(): TranslatorInstance {
       try {
         const imageData = await blobToImageData(resizedImage)
         console.log('phash', phash(imageData))
-      } catch (e) {
+      }
+      catch (e) {
         console.warn(e)
       }
 
@@ -428,7 +398,7 @@ function mount(): TranslatorInstance {
             buttonText.value = t('common.client.submit-progress', { progress })
           },
         },
-        optionsOverwrite
+        optionsOverwrite,
       ).catch((e) => {
         buttonText.value = t('common.client.submit-error')
         throw e
@@ -471,7 +441,8 @@ function mount(): TranslatorInstance {
 
         translateMounted.value = true
         buttonTranslated.value = true
-      } catch (e) {
+      }
+      catch (e) {
         buttonDisabled = false
         translateMounted.value = false
         throw e
@@ -479,7 +450,8 @@ function mount(): TranslatorInstance {
     }
     function disable() {
       imageNode.setAttribute('src', src)
-      if (srcset) imageNode.setAttribute('srcset', srcset)
+      if (srcset)
+        imageNode.setAttribute('srcset', srcset)
       imageNode.removeAttribute('data-trans')
       translateMounted.value = false
       buttonTranslated.value = false
@@ -487,25 +459,29 @@ function mount(): TranslatorInstance {
 
     // called on click
     function toggle() {
-      if (buttonDisabled) return
+      if (buttonDisabled)
+        return
       if (!translateMounted.value) {
         translateEnabledMap.set(originalSrc, true)
         enable()
-      } else {
+      }
+      else {
         translateEnabledMap.delete(originalSrc)
         disable()
       }
     }
 
     // enable if enabled
-    if (translateEnabledMap.get(originalSrc)) enable()
+    if (translateEnabledMap.get(originalSrc))
+      enable()
 
     return {
       imageNode,
       stop: () => {
         buttonApp.unmount()
         parent.removeChild(container)
-        if (translateMounted.value) disable()
+        if (translateMounted.value)
+          disable()
       },
       async enable() {
         translateEnabledMap.set(originalSrc, true)
@@ -524,72 +500,68 @@ function mount(): TranslatorInstance {
   // translate all
   let removeTransAll: () => void | undefined
   function refreshTransAll() {
-    if (document.querySelector('.sc-emr523-2')) return
+    if (document.querySelector('.sc-emr523-2'))
+      return
     const section = document.querySelector('.sc-181ts2x-0')
     if (section) {
-      if (section.querySelector('[data-transall]')) return
+      if (section.querySelector('[data-transall]'))
+        return
 
       const container = document.createElement('div')
       section.appendChild(container)
 
-      const buttonApp = createApp(
-        defineComponent({
-          setup() {
-            const started = ref(false)
-            const total = ref(0)
-            const finished = ref(0)
-            const erred = ref(false)
+      const buttonApp = createApp(defineComponent(() => {
+        const started = ref(false)
+        const total = ref(0)
+        const finished = ref(0)
+        const erred = ref(false)
 
-            return () =>
-              h(
-                'div',
-                {
-                  'data-transall': 'true',
-                  style: {
-                    display: 'inline-block',
-                    marginRight: '13px',
-                    padding: '0',
-                    color: 'inherit',
-                    height: '32px',
-                    lineHeight: '32px',
-                    cursor: 'pointer',
-                    fontWeight: '700',
-                  },
-                  onClick: withModifiers(() => {
-                    if (started.value) return
-                    started.value = true
-                    total.value = instances.size
-                    const inc = () => {
-                      finished.value++
-                    }
-                    const err = () => {
-                      erred.value = true
-                      finished.value++
-                    }
-                    for (const instance of instances.values()) {
-                      if (instance.isEnabled()) inc()
-                      else instance.enable().then(inc).catch(err)
-                    }
-                  }, ['stop', 'prevent']),
-                },
-                [
-                  tt(
-                    started.value
-                      ? finished.value === total.value
-                        ? erred.value
-                          ? t('common.batch.error')
-                          : t('common.batch.finish')
-                        : t('common.batch.progress', {
-                            count: finished.value,
-                            total: total.value,
-                          })
-                      : t('common.control.batch')
-                  ),
-                ]
-              )
-          },
-        })
-      )
+        return () =>
+          h('div', {
+            'data-transall': 'true',
+            'style': {
+              display: 'inline-block',
+              marginRight: '13px',
+              padding: '0',
+              color: 'inherit',
+              height: '32px',
+              lineHeight: '32px',
+              cursor: 'pointer',
+              fontWeight: '700',
+            },
+            'onClick': withModifiers(() => {
+              if (started.value)
+                return
+              started.value = true
+              total.value = instances.size
+              const inc = () => {
+                finished.value++
+              }
+              const err = () => {
+                erred.value = true
+                finished.value++
+              }
+              for (const instance of instances.values()) {
+                if (instance.isEnabled())
+                  inc()
+                else instance.enable().then(inc).catch(err)
+              }
+            }, ['stop', 'prevent']),
+          }, [
+            tt(
+              started.value
+                ? finished.value === total.value
+                  ? erred.value
+                    ? t('common.batch.error')
+                    : t('common.batch.finish')
+                  : t('common.batch.progress', {
+                    count: finished.value,
+                    total: total.value,
+                  })
+                : t('common.control.batch'),
+            ),
+          ])
+      }))
       buttonApp.mount(container)
 
       removeTransAll = () => {
@@ -600,15 +572,10 @@ function mount(): TranslatorInstance {
   }
 
   const imageObserver = new MutationObserver(
-    useThrottleFn(
-      () => {
-        rescanImages()
-        refreshTransAll()
-      },
-      200,
-      true,
-      false
-    )
+    useThrottleFn(() => {
+      rescanImages()
+      refreshTransAll()
+    }, 200, true, false),
   )
   imageObserver.observe(document.body, { childList: true, subtree: true })
   rescanImages()
@@ -617,7 +584,7 @@ function mount(): TranslatorInstance {
   return {
     stop() {
       imageObserver.disconnect()
-      instances.forEach((instance) => instance.stop())
+      instances.forEach(instance => instance.stop())
       removeTransAll?.()
     },
   }

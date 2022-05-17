@@ -6,7 +6,7 @@ languageIds:
   - vue
 
 usageMatchRegex:
-  - "[^\\w\\d]t\\(['\"`]({key})['\"`]"
+  - '[^\w\d]t\([''"`]({key})[''"`]'
 
 refactorTemplates:
   - t('$1')

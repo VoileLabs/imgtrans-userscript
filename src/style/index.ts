@@ -12,7 +12,6 @@ const cssEl = document.createElement('style')
 cssEl.innerHTML = css
 
 export function checkCSS() {
-  if (!document.head.contains(cssEl)) {
+  if (!document.head.contains(cssEl))
     document.head.appendChild(cssEl)
-  }
 }

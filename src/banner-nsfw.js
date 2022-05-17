@@ -41,8 +41,10 @@
 
 // {{license}}
 
-/* eslint-disable no-undef */
-var GMP
+/* eslint-disable no-undef, @typescript-eslint/no-unused-vars */
+const VERSION = '{{version}}'
+const EDITION = 'nsfw'
+let GMP
 {
   // polyfill functions
   const GMPFunctionMap = {
@@ -79,11 +81,11 @@ var GMP
         const v = target[prop]
         return typeof v === 'function' ? v.bind(target) : v
       }
-      if (prop in GMPFunctionMap && typeof GMPFunctionMap[prop] === 'function') {
+      if (prop in GMPFunctionMap && typeof GMPFunctionMap[prop] === 'function')
         return GMPFunctionMap[prop]
-      }
+
       console.error(
-        `[Touhou.AI | Manga Translator] GM.${prop} isn't supported in your userscript engine and it's required by this script. This may lead to unexpected behavior.`
+        `[Touhou.AI | Manga Translator] GM.${prop} isn't supported in your userscript engine and it's required by this script. This may lead to unexpected behavior.`,
       )
     },
   })

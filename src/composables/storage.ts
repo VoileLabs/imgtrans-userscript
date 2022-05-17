@@ -15,14 +15,14 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
   const data = ref<T | undefined>(initialValue) as unknown as GMStorageRef<UnwrapRef<T>>
 
   let listener: number | undefined
-  if (GMP.addValueChangeListener)
+  if (GMP.addValueChangeListener) {
     (async () => {
       listener = await GMP.addValueChangeListener(key, (name, oldValue, newValue, remote) => {
-        if (name === key && (remote === undefined || remote === true)) {
+        if (name === key && (remote === undefined || remote === true))
           read(newValue)
-        }
       })
     })()
+  }
 
   const {
     pause: pauseWatch,
@@ -36,23 +36,22 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
         pauseWatch()
         data.value = initialValue as UnwrapRef<T>
         resumeWatch()
-      } else {
+      }
+      else {
         await GMP.setValue(key, newValue)
       }
     },
-    {
-      flush: 'sync',
-    }
+    { flush: 'sync' },
   )
 
   async function read(newValue?: string) {
     pauseWatch()
     const rawValue = newValue ?? (await GMP.getValue(key))
-    if (rawValue == null) {
+    if (rawValue == null)
       data.value = initialValue as UnwrapRef<T>
-    } else {
+    else
       data.value = rawValue as UnwrapRef<T>
-    }
+
     resumeWatch()
   }
 
@@ -62,7 +61,8 @@ export function useGMStorage<T>(key: string, initialValue?: T) {
 
   onScopeDispose(() => {
     stopWatch()
-    if (GMP.removeValueChangeListener && listener) GMP.removeValueChangeListener(listener)
+    if (GMP.removeValueChangeListener && listener)
+      GMP.removeValueChangeListener(listener)
   })
 
   return data

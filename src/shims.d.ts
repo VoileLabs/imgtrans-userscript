@@ -10,3 +10,5 @@ declare module '*.yml' {
 }
 
 declare const GMP: typeof GM
+declare const VERSION: string
+declare const EDITION: 'regular' | 'nsfw'
