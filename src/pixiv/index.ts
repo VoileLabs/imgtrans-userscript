@@ -53,7 +53,9 @@ function mount(): TranslatorInstance {
       .filter(node =>
         node.hasAttribute('srcset')
           || node.hasAttribute('data-trans')
-          || node.parentElement?.classList.contains('sc-1pkrz0g-1'))
+          || node.parentElement?.classList.contains('sc-1pkrz0g-1')
+          || node.parentElement?.classList.contains('gtm-expand-full-size-illust'),
+      )
   }
 
   function rescanImages() {
@@ -253,11 +255,11 @@ function mount(): TranslatorInstance {
                           ),
                           h('div', {
                             style: {
-                              width: '100%',
-                              paddingBottom: '1px',
+                              padding: '2px 0px 1px 0px',
                               border: '1px solid #A1A1AA',
-                              borderRadius: '2px',
+                              borderRadius: '4px',
                               textAlign: 'center',
+                              cursor: 'pointer',
                             },
                             onClick: withModifiers(() => {
                               if (buttonDisabled)
@@ -498,7 +500,59 @@ function mount(): TranslatorInstance {
   }
 
   // translate all
-  let removeTransAll: () => void | undefined
+  const transAllComp = defineComponent(() => {
+    const started = ref(false)
+    const total = ref(0)
+    const finished = ref(0)
+    const erred = ref(false)
+
+    return () =>
+      h('div', {
+        'data-transall': 'true',
+        'style': {
+          display: 'inline-block',
+          marginRight: '13px',
+          padding: '0',
+          color: 'inherit',
+          height: '32px',
+          lineHeight: '32px',
+          cursor: 'pointer',
+          fontWeight: '700',
+        },
+        'onClick': withModifiers(() => {
+          if (started.value)
+            return
+          started.value = true
+          total.value = instances.size
+          const inc = () => {
+            finished.value++
+          }
+          const err = () => {
+            erred.value = true
+            finished.value++
+          }
+          for (const instance of instances.values()) {
+            if (instance.isEnabled())
+              inc()
+            else instance.enable().then(inc).catch(err)
+          }
+        }, ['stop', 'prevent']),
+      }, [
+        tt(
+          started.value
+            ? finished.value === total.value
+              ? erred.value
+                ? t('common.batch.error')
+                : t('common.batch.finish')
+              : t('common.batch.progress', {
+                count: finished.value,
+                total: total.value,
+              })
+            : t('common.control.batch'),
+        ),
+      ])
+  })
+  let removeTransAll: (() => void) | undefined
   function refreshTransAll() {
     if (document.querySelector('.sc-emr523-2'))
       return
@@ -509,64 +563,36 @@ function mount(): TranslatorInstance {
 
       const container = document.createElement('div')
       section.appendChild(container)
-
-      const buttonApp = createApp(defineComponent(() => {
-        const started = ref(false)
-        const total = ref(0)
-        const finished = ref(0)
-        const erred = ref(false)
-
-        return () =>
-          h('div', {
-            'data-transall': 'true',
-            'style': {
-              display: 'inline-block',
-              marginRight: '13px',
-              padding: '0',
-              color: 'inherit',
-              height: '32px',
-              lineHeight: '32px',
-              cursor: 'pointer',
-              fontWeight: '700',
-            },
-            'onClick': withModifiers(() => {
-              if (started.value)
-                return
-              started.value = true
-              total.value = instances.size
-              const inc = () => {
-                finished.value++
-              }
-              const err = () => {
-                erred.value = true
-                finished.value++
-              }
-              for (const instance of instances.values()) {
-                if (instance.isEnabled())
-                  inc()
-                else instance.enable().then(inc).catch(err)
-              }
-            }, ['stop', 'prevent']),
-          }, [
-            tt(
-              started.value
-                ? finished.value === total.value
-                  ? erred.value
-                    ? t('common.batch.error')
-                    : t('common.batch.finish')
-                  : t('common.batch.progress', {
-                    count: finished.value,
-                    total: total.value,
-                  })
-                : t('common.control.batch'),
-            ),
-          ])
-      }))
-      buttonApp.mount(container)
+      const transAllApp = createApp(transAllComp)
+      transAllApp.mount(container)
 
       removeTransAll = () => {
-        buttonApp.unmount()
+        transAllApp.unmount()
         section.removeChild(container)
+      }
+    }
+  }
+  let removeMangaViewerTransAll: (() => void) | undefined
+  function refreshManagaViewerTransAll() {
+    const mangaViewer = document.querySelector('.gtm-manga-viewer-change-direction')?.parentElement?.parentElement
+    if (mangaViewer) {
+      if (removeMangaViewerTransAll)
+        return
+
+      const container = document.createElement('div')
+      mangaViewer.prepend(container)
+      const transAllApp = createApp(transAllComp)
+      transAllApp.mount(container)
+
+      removeMangaViewerTransAll = () => {
+        transAllApp.unmount()
+        mangaViewer.removeChild(container)
+      }
+    }
+    else {
+      if (removeMangaViewerTransAll) {
+        removeMangaViewerTransAll()
+        removeMangaViewerTransAll = undefined
       }
     }
   }
@@ -575,6 +601,7 @@ function mount(): TranslatorInstance {
     useThrottleFn(() => {
       rescanImages()
       refreshTransAll()
+      refreshManagaViewerTransAll()
     }, 200, true, false),
   )
   imageObserver.observe(document.body, { childList: true, subtree: true })
@@ -586,6 +613,7 @@ function mount(): TranslatorInstance {
       imageObserver.disconnect()
       instances.forEach(instance => instance.stop())
       removeTransAll?.()
+      removeMangaViewerTransAll?.()
     },
   }
 }

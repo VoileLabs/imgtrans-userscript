@@ -63,20 +63,19 @@ async function initWasm() {
   }
 }
 
-Promise.allSettled
-  = Promise.allSettled
-    || ((promises: Promise<never>[]) =>
-      Promise.all(
-        promises.map(p =>
-          p.then(value => ({
-            status: 'fulfilled',
-            value,
-          })).catch(reason => ({
-            status: 'rejected',
-            reason,
-          })),
-        ),
-      ))
+Promise.allSettled = Promise.allSettled
+  || ((promises: Promise<never>[]) =>
+    Promise.all(
+      promises.map(p =>
+        p.then(value => ({
+          status: 'fulfilled',
+          value,
+        })).catch(reason => ({
+          status: 'rejected',
+          reason,
+        })),
+      ),
+    ))
 
 let currentURL: string | undefined
 let translator: ScopedInstance<TranslatorInstance> | undefined

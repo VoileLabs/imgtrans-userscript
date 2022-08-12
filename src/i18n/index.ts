@@ -1,9 +1,9 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { scriptLang } from '../composables/storage'
 
 import zhCN from './zh-CN.yml'
 import enUS from './en-US.yml'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const messages: Record<string, any> = {
   'zh-CN': zhCN,
   'en-US': enUS,
@@ -24,11 +24,11 @@ export interface TranslateState {
 
 export const realLang = ref(navigator.language)
 export const lang = computed(() => scriptLang.value || tryMatchLang(realLang.value))
-watch(lang, (o, n) => {
-  if (o === n)
-    return
-  console.log(`lang changed: ${lang.value}`, `real: ${realLang.value}`)
-})
+// watch(lang, (o, n) => {
+//   if (o === n)
+//     return
+//   console.log(`lang changed: ${lang.value}`, `real: ${realLang.value}`)
+// })
 
 export const t = (key: string, props: Record<string, unknown> = {}): TranslateState => {
   return { key, props }

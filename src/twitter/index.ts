@@ -422,11 +422,11 @@ function mount(): TranslatorInstance {
                     ),
                     h('div', {
                       style: {
-                        width: '100%',
-                        paddingBottom: '1px',
+                        padding: '2px 0px 1px 0px',
                         border: '1px solid #A1A1AA',
                         borderRadius: '2px',
                         textAlign: 'center',
+                        cursor: 'pointer',
                       },
                       onClick: withModifiers(() => {
                         if (!submitTranslateTest())

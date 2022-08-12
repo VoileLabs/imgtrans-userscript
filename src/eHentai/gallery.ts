@@ -12,7 +12,9 @@ const translator: Translator = {
   match(url) {
     // https://e-hentai.org/g/<id>/<token>
     // https://exhentai.org/g/<id>/<token>
-    if (!url.hostname.endsWith('e-hentai.org') && !url.hostname.endsWith('exhentai.org'))
+    // https://exhentai55ld2wyap5juskbm67czulomrouspdacjamjeloj7ugjbsad.onion/g/<id>/<token>
+    if (!url.hostname.endsWith('e-hentai.org') && !url.hostname.endsWith('exhentai.org')
+     && !url.hostname.endsWith('exhentai55ld2wyap5juskbm67czulomrouspdacjamjeloj7ugjbsad.onion'))
       return false
     if (!url.pathname.startsWith('/g/'))
       return false

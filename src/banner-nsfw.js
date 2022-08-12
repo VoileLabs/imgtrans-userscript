@@ -19,8 +19,10 @@
 // @match http://exhentai.org/
 // @connect e-hentai.org
 // @connect exhentai.org
+// @connect exhentai55ld2wyap5juskbm67czulomrouspdacjamjeloj7ugjbsad.onion
 // @connect hath.network
 // @connect touhou.ai
+// @connect *
 // @grant GM.xmlHttpRequest
 // @grant GM_xmlhttpRequest
 // @grant GM.setValue
@@ -53,8 +55,7 @@ let GMP
     getValue: typeof GM_getValue !== 'undefined' ? GM_getValue : undefined,
     deleteValue: typeof GM_deleteValue !== 'undefined' ? GM_deleteValue : undefined,
     addValueChangeListener: typeof GM_addValueChangeListener !== 'undefined' ? GM_addValueChangeListener : undefined,
-    removeValueChangeListener:
-      typeof GM_removeValueChangeListener !== 'undefined' ? GM_removeValueChangeListener : undefined,
+    removeValueChangeListener: typeof GM_removeValueChangeListener !== 'undefined' ? GM_removeValueChangeListener : undefined,
     getResourceUrl: typeof GM_getResourceURL !== 'undefined' ? GM_getResourceURL : undefined,
   }
   const xmlHttpRequest = GM.xmlHttpRequest.bind(GM) || GMPFunctionMap.xmlHttpRequest

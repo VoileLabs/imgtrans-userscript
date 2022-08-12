@@ -29,6 +29,55 @@ export async function resizeToSubmit(blob: Blob, suffix: string): Promise<{ blob
   }
 }
 
+// export async function resizeToSubmit(blob: Blob, suffix: string): Promise<{ blob: Blob; suffix: string }> {
+//   const blobUrl = URL.createObjectURL(blob)
+//   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+//     const img = new Image()
+//     img.onload = () => resolve(img)
+//     img.onerror = err => reject(err)
+//     img.src = blobUrl
+//   })
+//   URL.revokeObjectURL(blobUrl)
+
+//   const w = img.width
+//   const h = img.height
+
+//   if (w <= 4000 && h <= 4000)
+//     return { blob, suffix }
+
+//   // resize to less than 4k
+//   const scale = Math.min(4000 / w, 4000 / h)
+//   const width = Math.floor(w * scale)
+//   const height = Math.floor(h * scale)
+
+//   const canvas = document.createElement('canvas')
+//   canvas.width = width
+//   canvas.height = height
+
+//   const ctx = canvas.getContext('2d')!
+//   ctx.imageSmoothingQuality = 'high'
+//   ctx.drawImage(img, 0, 0, width, height)
+
+//   const newBlob = await new Promise<Blob>((resolve, reject) => {
+//     canvas.toBlob((blob) => {
+//       if (blob)
+//         resolve(blob)
+//       else
+//         reject(new Error('Canvas toBlob failed'))
+//     }, 'image/png')
+//   })
+
+//   console.log('resized from '
+//   + `${w}x${h}(${formatSize(blob.size)},${suffix})`
+//   + ' to '
+//   + `${width}x${height}(${formatSize(newBlob.size)},png)`)
+
+//   return {
+//     blob: newBlob,
+//     suffix: 'png',
+//   }
+// }
+
 export interface TranslateOptionsOverwrite {
   detectionResolution?: string
   renderTextOrientation?: string

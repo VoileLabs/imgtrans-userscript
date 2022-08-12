@@ -5,7 +5,7 @@ import MagicString from 'magic-string'
 import { defineConfig } from 'rollup'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import typescript from '@rollup/plugin-typescript'
+import esbuild from 'rollup-plugin-esbuild'
 import icons from 'unplugin-icons/rollup'
 import yaml from '@rollup/plugin-yaml'
 import { dependencies, version } from './package.json'
@@ -39,13 +39,15 @@ function gennerateConfig(input, output, banner) {
     plugins: [
       nodeResolve(),
       commonjs(),
-      typescript(),
+      esbuild({
+        charset: 'utf8',
+      }),
       icons({
         compiler: 'vue3',
       }),
       yaml(),
       {
-        name: 'patch',
+        name: 'wasm-patch',
         transform(code, id) {
           if (id === path.resolve(__dirname, './wasm/pkg/wasm.js')) {
             const s = new MagicString(code)
