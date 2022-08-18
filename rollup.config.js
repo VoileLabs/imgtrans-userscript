@@ -23,7 +23,7 @@ function gennerateConfig(input, output, banner) {
         .replace(/{{versionVue}}/g, dependencies.vue.replace(/^\^/, ''))
         .replace(/{{versionVueuseShared}}/g, dependencies['@vueuse/shared'].replace(/^\^/, ''))
         .replace(/{{versionVueuseCore}}/g, dependencies['@vueuse/core'].replace(/^\^/, ''))
-        .replace(/{{wasmCommit}}/g, '777037c9b1f6b734d21aa4b074d79aa73e6ba352')
+        .replace(/{{wasmCommit}}/g, '40fc71c9589935551ca3f98842b7531f005589e5')
         .replace('// {{license}}',
           fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
             .map(file => `/**\n${fs.readFileSync(file, 'utf8').trim()}\n*/`)
@@ -32,10 +32,9 @@ function gennerateConfig(input, output, banner) {
         'vue': 'Vue',
         '@vueuse/shared': 'VueUse',
         '@vueuse/core': 'VueUse',
-        'wasmJsModule': 'wasmJsModule',
       },
     },
-    external: ['vue', '@vueuse/shared', '@vueuse/core', 'wasmJsModule'],
+    external: ['vue', '@vueuse/shared', '@vueuse/core'],
     plugins: [
       nodeResolve(),
       commonjs(),
@@ -48,15 +47,18 @@ function gennerateConfig(input, output, banner) {
       yaml(),
       {
         name: 'wasm-patch',
-        transform(code, id) {
-          if (id === path.resolve(__dirname, './wasm/pkg/wasm.js')) {
-            const s = new MagicString(code)
-            s.append('\nexport function setWasm(w){wasm=w;}\n')
-            return {
-              code: s.toString(),
-              map: s.generateMap({ hires: true }),
+        transform: {
+          order: 'pre',
+          handler(code, id) {
+            if (id === path.resolve(__dirname, './wasm/pkg/wasm.js')) {
+              const s = new MagicString(code)
+              s.append('\nexport function setWasm(w){wasm=w;}\n')
+              return {
+                code: s.toString(),
+                map: s.generateMap({ hires: true }),
+              }
             }
-          }
+          },
         },
       },
     ],

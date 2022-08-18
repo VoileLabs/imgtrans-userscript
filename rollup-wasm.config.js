@@ -7,7 +7,7 @@ export default defineConfig({
     dir: 'dist',
     entryFileNames: 'wasm_bg.js',
     format: 'iife',
-    name: 'wasmJsModule',
+    name: 'ImgTransWasmJsModule',
   },
   plugins: [minify()],
 })

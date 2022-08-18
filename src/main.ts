@@ -1,7 +1,5 @@
 import type { EffectScope } from 'vue'
 import { effectScope, onScopeDispose } from 'vue'
-// @ts-expect-error doesn't need to provide a type
-import wasmJsModule from 'wasmJsModule'
 import { useThrottleFn } from '@vueuse/shared'
 // @ts-expect-error doesn't need to provide a type
 import init, { setWasm } from '../wasm/pkg/wasm'
@@ -59,7 +57,9 @@ async function initWasm() {
     }
   }
   catch (e) {
-    setWasm(wasmJsModule)
+    // eslint-disable-next-line no-new-func
+    const ImgTransWasmJsModule = new Function(`${await GM.getResourceText('wasmjs')}\nreturn ImgTransWasmJsModule`)()
+    setWasm(ImgTransWasmJsModule)
   }
 }
 
