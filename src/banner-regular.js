@@ -11,7 +11,7 @@
 // @supportURL        https://github.com/VoileLabs/imgtrans-userscript/issues
 // @source            https://github.com/VoileLabs/imgtrans-userscript
 // @require https://cdn.jsdelivr.net/combine/npm/vue@{{versionVue}}/dist/vue.runtime.global.prod.js,npm/@vueuse/shared@{{versionVueuseShared}}/index.iife.min.js,npm/@vueuse/core@{{versionVueuseCore}}/index.iife.min.js
-// @resource wasmjs https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.js
+// @require https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.js
 // @resource wasm https://cdn.jsdelivr.net/gh/VoileLabs/imgtrans-userscript@{{wasmCommit}}/wasm_bg.wasm
 // @include http*://www.pixiv.net/*
 // @match http://www.pixiv.net/
@@ -35,8 +35,6 @@
 // @grant GM_addValueChangeListener
 // @grant GM.removeValueChangeListener
 // @grant GM_removeValueChangeListener
-// @grant GM.getResourceText
-// @grant GM_getResourceText
 // @grant GM.getResourceUrl
 // @grant GM_getResourceURL
 // @grant window.onurlchange
@@ -58,7 +56,6 @@ let GMP
     deleteValue: typeof GM_deleteValue !== 'undefined' ? GM_deleteValue : undefined,
     addValueChangeListener: typeof GM_addValueChangeListener !== 'undefined' ? GM_addValueChangeListener : undefined,
     removeValueChangeListener: typeof GM_removeValueChangeListener !== 'undefined' ? GM_removeValueChangeListener : undefined,
-    getResourceText: typeof GM_getResourceText !== 'undefined' ? GM_getResourceText : undefined,
     getResourceUrl: typeof GM_getResourceURL !== 'undefined' ? GM_getResourceURL : undefined,
   }
   const xmlHttpRequest = GM.xmlHttpRequest.bind(GM) || GMPFunctionMap.xmlHttpRequest

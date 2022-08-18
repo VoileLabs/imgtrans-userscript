@@ -32,9 +32,10 @@ function gennerateConfig(input, output, banner) {
         'vue': 'Vue',
         '@vueuse/shared': 'VueUse',
         '@vueuse/core': 'VueUse',
+        'ImgTransWasmJsModule': 'ImgTransWasmJsModule',
       },
     },
-    external: ['vue', '@vueuse/shared', '@vueuse/core'],
+    external: ['vue', '@vueuse/shared', '@vueuse/core', 'ImgTransWasmJsModule'],
     plugins: [
       nodeResolve(),
       commonjs(),
