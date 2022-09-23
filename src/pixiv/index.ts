@@ -3,7 +3,6 @@ import { useThrottleFn } from '@vueuse/shared'
 import type { Translator, TranslatorInstance } from '../main'
 import type { TranslateOptionsOverwrite } from '../utils/core'
 import {
-  blobToImageData,
   downloadResultBlob,
   getStatusText,
   pullTransStatusUntilFinish,
@@ -12,7 +11,7 @@ import {
 } from '../utils/core'
 import type { TranslateState } from '../i18n'
 import { t, tt, untt } from '../i18n'
-import { formatProgress, phash } from '../utils'
+import { formatProgress } from '../utils'
 import {
   detectionResolution,
   renderTextOrientation,
@@ -380,16 +379,6 @@ function mount(): TranslatorInstance {
       buttonText.value = t('common.client.resize')
       await nextTick()
       const { blob: resizedImage, suffix: resizedSuffix } = await resizeToSubmit(originalImage, originalSrcSuffix)
-
-      buttonText.value = t('common.client.hash')
-      await nextTick()
-      try {
-        const imageData = await blobToImageData(resizedImage)
-        console.log('phash', phash(imageData))
-      }
-      catch (e) {
-        console.warn(e)
-      }
 
       buttonText.value = t('common.client.submit')
       const id = await submitTranslate(

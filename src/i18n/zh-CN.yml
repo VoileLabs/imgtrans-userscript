@@ -10,7 +10,6 @@ common:
     download-image: 正在下载图片
     download-image-progress: 正在下载图片({progress})
     download-image-error: 下载图片出错
-    hash: 正在哈希图片
     resize: 正在缩放图片
   status:
     default: 未知状态

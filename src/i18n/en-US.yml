@@ -10,7 +10,6 @@ common:
     download-image: Downloading translated image
     download-image-progress: Downloading translated image ({progress})
     download-image-error: Error during translated image download
-    hash: Hashing image
     resize: Resizing image
   status:
     default: Unknown status

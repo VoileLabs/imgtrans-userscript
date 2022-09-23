@@ -1,5 +1,3 @@
-import { phash as phashInner, resize as resizeInner } from '../../wasm/pkg'
-
 const mimeMap: Record<string, string> = {
   png: 'image/png',
   jpg: 'image/jpeg',
@@ -20,11 +18,4 @@ export function formatSize(bytes: number) {
 }
 export function formatProgress(loaded: number, total: number) {
   return `${formatSize(loaded)}/${formatSize(total)}`
-}
-export function phash(image: ImageData) {
-  return phashInner(new Uint8Array(image.data), image.width, image.height)
-}
-export function resize(image: ImageData, width: number, height: number) {
-  const data = resizeInner(new Uint8Array(image.data), image.width, image.height, width, height)
-  return new ImageData(new Uint8ClampedArray(data), width, height)
 }

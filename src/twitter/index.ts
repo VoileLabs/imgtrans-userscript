@@ -18,14 +18,13 @@ import type { Translator, TranslatorInstance } from '../main'
 import { t, tt, untt } from '../i18n'
 import type { TranslateOptionsOverwrite } from '../utils/core'
 import {
-  blobToImageData,
   downloadResultBlob,
   getStatusText,
   pullTransStatusUntilFinish,
   resizeToSubmit,
   submitTranslate,
 } from '../utils/core'
-import { formatProgress, phash } from '../utils'
+import { formatProgress } from '../utils'
 import {
   detectResOptions,
   detectResOptionsMap,
@@ -141,16 +140,6 @@ function mount(): TranslatorInstance {
       translateStatusMap[url] = computed(() => tt(t('common.client.resize')))
       await nextTick()
       const { blob: resizedImage, suffix: resizedSuffix } = await resizeToSubmit(originalImage, originalSrcSuffix)
-
-      translateStatusMap[url] = computed(() => tt(t('common.client.hash')))
-      await nextTick()
-      try {
-        const imageData = await blobToImageData(resizedImage)
-        console.log('phash', phash(imageData))
-      }
-      catch (e) {
-        console.warn(e)
-      }
 
       translateStatusMap[url] = computed(() => tt(t('common.client.submit')))
       const id = await submitTranslate(

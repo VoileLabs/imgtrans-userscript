@@ -1,10 +1,6 @@
 import type { EffectScope } from 'vue'
 import { effectScope, onScopeDispose } from 'vue'
 import { useThrottleFn } from '@vueuse/shared'
-// @ts-expect-error doesn't need to provide a type
-import ImgTransWasmJsModule from 'ImgTransWasmJsModule'
-// @ts-expect-error doesn't need to provide a type
-import init, { setWasm } from '../wasm/pkg/wasm'
 import { checkCSS } from './style'
 import { changeLangEl } from './i18n'
 import { storageReady } from './composables/storage'
@@ -43,52 +39,12 @@ function createScopedInstance<T extends TranslatorInstance | SettingsInjectorIns
   return { scope, i }
 }
 
-async function initWasm() {
-  const uri = await GMP.getResourceUrl('wasm')
-  try {
-    if (/^data:.+;base64,/.test(uri)) {
-      const data = window.atob(uri.split(';base64,', 2)[1])
-      const buffer = new Uint8Array(data.length)
-      for (let i = 0; i < data.length; i++)
-        buffer[i] = data.charCodeAt(i)
-
-      await init(buffer)
-    }
-    else {
-      await init(uri)
-    }
-  }
-  catch (e) {
-    setWasm(ImgTransWasmJsModule)
-  }
-}
-
-Promise.allSettled = Promise.allSettled
-  || ((promises: Promise<never>[]) =>
-    Promise.all(
-      promises.map(p =>
-        p.then(value => ({
-          status: 'fulfilled',
-          value,
-        })).catch(reason => ({
-          status: 'rejected',
-          reason,
-        })),
-      ),
-    ))
-
 let currentURL: string | undefined
 let translator: ScopedInstance<TranslatorInstance> | undefined
 let settingsInjector: ScopedInstance<SettingsInjectorInstance> | undefined
 
 export async function start(translators: Translator[], settingsInjectors: SettingsInjector[]) {
   await storageReady
-
-  const results = await Promise.allSettled([initWasm()])
-  for (const result of results) {
-    if (result.status === 'rejected')
-      console.warn(result.reason)
-  }
 
   function onUpdate() {
     if (currentURL !== location.href) {

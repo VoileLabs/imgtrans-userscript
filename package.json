@@ -1,40 +1,39 @@
 {
   "name": "imgtrans-userscript",
-  "version": "0.7.13",
+  "version": "0.7.14",
   "private": true,
   "scripts": {
     "build": "rollup -c",
     "buildw": "rollup -cw",
-    "build-wasm": "rollup -c rollup-wasm.config.js",
     "test": "vitest --run",
     "testw": "vitest --watch",
     "lint": "eslint --fix ."
   },
   "dependencies": {
-    "@vueuse/core": "^9.1.0",
-    "@vueuse/shared": "^9.1.0",
-    "vue": "^3.2.37"
+    "@vueuse/core": "^9.2.0",
+    "@vueuse/shared": "^9.2.0",
+    "vue": "^3.2.39"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.26.1",
-    "@iconify-json/carbon": "^1.1.7",
+    "@antfu/eslint-config": "^0.27.0",
+    "@iconify-json/carbon": "^1.1.8",
     "@rollup/plugin-commonjs": "^22.0.2",
-    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-node-resolve": "^14.1.0",
     "@rollup/plugin-yaml": "^3.1.0",
-    "@types/eslint": "^8.4.5",
-    "@types/node": "^18.7.6",
+    "@types/eslint": "^8.4.6",
+    "@types/node": "^18.7.18",
     "@types/tampermonkey": "^4.0.5",
-    "@vue/compiler-sfc": "^3.2.37",
-    "esbuild": "^0.15.5",
-    "eslint": "^8.22.0",
-    "fast-glob": "^3.2.11",
+    "@vue/compiler-sfc": "^3.2.39",
+    "esbuild": "^0.15.9",
+    "eslint": "^8.23.1",
+    "fast-glob": "^3.2.12",
     "happy-dom": "^6.0.4",
-    "magic-string": "^0.26.2",
+    "magic-string": "^0.26.4",
     "rimraf": "^3.0.2",
-    "rollup": "^2.78.0",
-    "rollup-plugin-esbuild": "^4.9.3",
-    "typescript": "^4.7.4",
-    "unplugin-icons": "^0.14.8",
-    "vitest": "^0.22.0"
+    "rollup": "^2.79.1",
+    "rollup-plugin-esbuild": "^4.10.1",
+    "typescript": "^4.8.3",
+    "unplugin-icons": "^0.14.10",
+    "vitest": "^0.23.4"
   }
 }
