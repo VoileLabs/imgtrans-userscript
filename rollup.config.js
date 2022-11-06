@@ -1,12 +1,12 @@
 import fs from 'fs'
-import { sync as fgs } from 'fast-glob'
+import glob from 'fast-glob'
 import { defineConfig } from 'rollup'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import esbuild from 'rollup-plugin-esbuild'
 import icons from 'unplugin-icons/rollup'
 import yaml from '@rollup/plugin-yaml'
-import { dependencies, version } from './package.json'
+import info from './package.json' assert { type: 'json' }
 
 function gennerateConfig(input, output, banner) {
   return defineConfig({
@@ -17,12 +17,12 @@ function gennerateConfig(input, output, banner) {
       format: 'iife',
       banner: fs
         .readFileSync(banner, 'utf8')
-        .replace(/{{version}}/g, version)
-        .replace(/{{versionVue}}/g, dependencies.vue.replace(/^\^/, ''))
-        .replace(/{{versionVueuseShared}}/g, dependencies['@vueuse/shared'].replace(/^\^/, ''))
-        .replace(/{{versionVueuseCore}}/g, dependencies['@vueuse/core'].replace(/^\^/, ''))
+        .replace(/{{version}}/g, info.version)
+        .replace(/{{versionVue}}/g, info.dependencies.vue.replace(/^\^/, ''))
+        .replace(/{{versionVueuseShared}}/g, info.dependencies['@vueuse/shared'].replace(/^\^/, ''))
+        .replace(/{{versionVueuseCore}}/g, info.dependencies['@vueuse/core'].replace(/^\^/, ''))
         .replace('// {{license}}',
-          fgs(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
+          glob.sync(['LICENSE', 'src/**/LICENSE*'], { onlyFiles: true })
             .map(file => `/**\n${fs.readFileSync(file, 'utf8').trim()}\n*/`)
             .join('\n\n')),
       globals: {

@@ -22,11 +22,11 @@ export async function resizeToSubmit(blob: Blob, suffix: string): Promise<{ blob
   const w = img.width
   const h = img.height
 
-  if (w <= 4096 && h <= 4096)
+  if (w <= 4000 && h <= 4000)
     return { blob, suffix }
 
   // resize to less than 4k
-  const scale = Math.min(4096 / w, 4096 / h)
+  const scale = Math.min(4000 / w, 4000 / h)
   const width = Math.floor(w * scale)
   const height = Math.floor(h * scale)
 
@@ -79,7 +79,7 @@ export async function submitTranslate(
   formData.append('size', optionsOverwrite?.detectionResolution ?? detectionResolution.value)
   formData.append('translator', optionsOverwrite?.translator ?? translatorService.value)
   formData.append('tgt_lang', targetLang.value || BCP47ToISO639(realLang.value))
-  formData.append('dir', optionsOverwrite?.renderTextOrientation ?? renderTextOrientation.value)
+  formData.append('direction', optionsOverwrite?.renderTextOrientation ?? renderTextOrientation.value)
   formData.append('detector', optionsOverwrite?.textDetector ?? textDetector.value)
 
   const result = await GMP.xmlHttpRequest({
