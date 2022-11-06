@@ -14,7 +14,7 @@ function tryMatchLang(lang: string): string {
     return 'zh-CN'
   if (lang.startsWith('en'))
     return 'en-US'
-  return 'zh-CN'
+  return 'en-US'
 }
 
 export interface TranslateState {
@@ -128,10 +128,12 @@ export function BCP47ToISO639(code: string): string {
         return 'ESP'
       case 'tr':
         return 'TRK'
+      case 'uk':
+        return 'UKR'
     }
-    return 'CHS'
+    return 'ENG'
   }
   catch (e) {
-    return 'CHS'
+    return 'ENG'
   }
 }

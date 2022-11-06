@@ -33,6 +33,14 @@ export const translatorOptionsMap: Record<string, string> = {
   google: 'Google',
   deepl: 'DeepL',
   papago: 'Papago',
+  offline: 'Sugoi / NLLB',
+  // offline_big: 'Sugoi / NLLB (Big)',
+  // nnlb: 'NLLB',
+  // nnlb_big: 'NLLB (Big)',
+  // sugoi: 'Sugoi',
+  // sugoi_small: 'Sugoi (Small)',
+  // sugoi_big: 'Sugoi (Big)',
+  // none: 'None (Inpainting only)',
 }
 export const translatorOptions = Object.keys(translatorOptionsMap)
 
@@ -54,40 +62,36 @@ export function renderSettings(options?: {
       `"${EDITION}" edition, v${VERSION}`,
     ]),
     // Sponsor
-    h('div', {
-      style: {
-        display: 'flex',
-        flexDirection: 'row',
-        flexWrap: 'nowrap',
-        gap: '4px',
-      },
-    }, [
+    h('div', {}, [
       tt(t('sponsor.text')),
+      ' ',
       h('a', {
         href: 'https://ko-fi.com/voilelabs',
         target: '_blank',
         rel: 'noopener noreferrer',
         style: {
           color: '#2563EB',
-          textDecoration: 'underline',
+          textDecoration: 'none',
         },
       }, 'ko-fi'),
+      ' ',
       h('a', {
         href: 'https://patreon.com/voilelabs',
         target: '_blank',
         rel: 'noopener noreferrer',
         style: {
           color: '#2563EB',
-          textDecoration: 'underline',
+          textDecoration: 'none',
         },
       }, 'Patreon'),
+      ' ',
       h('a', {
         href: 'https://afdian.net/@voilelabs',
         target: '_blank',
         rel: 'noopener noreferrer',
         style: {
           color: '#2563EB',
-          textDecoration: 'underline',
+          textDecoration: 'none',
         },
       }, '爱发电'),
     ]),
@@ -128,6 +132,7 @@ export function renderSettings(options?: {
           'PTB': 'português',
           'ROM': 'limba română',
           'RUS': 'русский язык',
+          'UKR': 'українська мова',
           'ESP': 'español',
           'TRK': 'Türk dili',
         },
